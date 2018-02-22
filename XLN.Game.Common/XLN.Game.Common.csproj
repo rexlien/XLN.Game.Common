@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net35</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>..\..\Assets\XLN.Game.Common</OutputPath>
+    <CustomCommands>
+      <CustomCommands>
+        <Command>
+          <type>BeforeBuild</type>
+          <command>../bin/mac/thrift -r --gen csharp thrift/EntityService.thrift</command>
+        </Command>
+        <Command>
+          <type>Clean</type>
+          <command>rm -rf gen-csharp</command>
+        </Command>
+      </CustomCommands>
+    </CustomCommands>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>..\..\Assets\XLN.Game.Common</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\thrift\lib\csharp\src\Thrift.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="thrift\EntityService.thrift" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="thrift\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="gen-csharp\TestMessage.cs" />
+  </ItemGroup>
+</Project>
