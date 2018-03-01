@@ -1,16 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net35</TargetFramework>
+    <TargetFramework>net45</TargetFramework>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugType>full</DebugType>
     <OutputPath>..\..\Assets\XLN.Game.Common</OutputPath>
     <CustomCommands>
       <CustomCommands>
         <Command>
           <type>BeforeBuild</type>
-          <command>../bin/mac/thrift -r --gen csharp thrift/EntityService.thrift</command>
+          <command>../bin/mac/thrift -r --gen csharp ../XLNProtocol/thrift/EntityService.thrift</command>
         </Command>
         <Command>
           <type>Clean</type>
@@ -29,9 +30,11 @@
     <None Remove="thrift\EntityService.thrift" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="thrift\" />
+    <Compile Remove="gen-csharp\TestMessage.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Remove="gen-csharp\TestMessage.cs" />
+    <None Include="..\XLNProtocol\thrift\EntityService.thrift">
+      <Link>XLNProtocol\thrift\EntityService.thrift</Link>
+    </None>
   </ItemGroup>
 </Project>

@@ -1,0 +1,3 @@
+[submodule "XLNProtocol"]
+	path = XLNProtocol
+	url = https://github.com/rexlien/XLNProtocol.git
