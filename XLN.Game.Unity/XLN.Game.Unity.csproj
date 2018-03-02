@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net45</TargetFramework>
+    <BaseDirectory>..\..\Assets\XLN.Game.Common</BaseDirectory>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>..\..\Assets\XLN.Game.Common</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>..\..\Assets\XLN.Game.Common</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Class1.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\XLN.Game.Common\XLN.Game.Common.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="UnityEngine">
+      <HintPath>libs\UnityEngine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+</Project>

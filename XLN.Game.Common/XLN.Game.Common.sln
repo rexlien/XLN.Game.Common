@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XLN.Game.Common", "XLN.Game
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Thrift", "..\..\thrift\lib\csharp\src\Thrift.csproj", "{499EB63C-D74C-47E8-AE48-A2FC94538E9D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XLN.Game.Unity", "..\XLN.Game.Unity\XLN.Game.Unity.csproj", "{979A2102-6386-4E14-915C-055F9E5D8695}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,5 +21,9 @@ Global
 		{499EB63C-D74C-47E8-AE48-A2FC94538E9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{499EB63C-D74C-47E8-AE48-A2FC94538E9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{499EB63C-D74C-47E8-AE48-A2FC94538E9D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{979A2102-6386-4E14-915C-055F9E5D8695}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{979A2102-6386-4E14-915C-055F9E5D8695}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{979A2102-6386-4E14-915C-055F9E5D8695}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{979A2102-6386-4E14-915C-055F9E5D8695}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
