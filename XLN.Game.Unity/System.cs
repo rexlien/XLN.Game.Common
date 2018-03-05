@@ -18,7 +18,7 @@ namespace XLN.Game.Unity
                 if (!s_GameObject)
                 {
                     s_GameObject = new GameObject(s_SystemObjName);
-                    s_GameObject.hideFlags = HideFlags.HideAndDontSave;
+                    s_GameObject.hideFlags = HideFlags.HideInHierarchy;
                     UnityEngine.Object.DontDestroyOnLoad(s_GameObject);
                     s_GameObject.AddComponent<SystemBehavior>();
                     Debug.Log("System Object Added");

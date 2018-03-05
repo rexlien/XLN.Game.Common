@@ -10,5 +10,16 @@ namespace XLN.Game.Unity
         {
             ServiceMgr.GetServiceMgr().RegisterService(new UnityLogService());
         }
+
+        void Start()
+        {
+            ServiceMgr.GetServiceMgr().Init();
+        }
+
+        void Update()
+        {
+            ServiceMgr.GetServiceMgr().Update(Time.deltaTime);    
+        }
+
     }
 }
