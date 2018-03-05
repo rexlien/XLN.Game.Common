@@ -1,74 +1,78 @@
 ﻿using UnityEngine;
 using System.Collections;
+using XLN.Game.Common;
 
-public class BaseBehavior : MonoBehaviour
+namespace XLN.Game.Unity
 {
-
-    /*private Unit m_Unit;
-    public Unit Unit
+    public class BaseBehavior : MonoBehaviour
     {
-        get
-        {
-            return m_Unit;
-        }
 
-        set
+        /*private Unit m_Unit;
+        public Unit Unit
         {
-            //TODO: clean old one's handler
-            if (m_Unit != value)
+            get
             {
-                m_Unit = value;
-                m_Unit.OnEnterStateHandler += OnEnterState;
-                m_Unit.OnUpdateStateHandler += OnUpdateState;
-                m_Unit.OnLeaveStateHandler += OnLeaveState;
-                m_Unit.OnHurtHandler += OnHurt;
-                m_Unit.OnDeathHandler += OnDeath;
+                return m_Unit;
             }
 
+            set
+            {
+                //TODO: clean old one's handler
+                if (m_Unit != value)
+                {
+                    m_Unit = value;
+                    m_Unit.OnEnterStateHandler += OnEnterState;
+                    m_Unit.OnUpdateStateHandler += OnUpdateState;
+                    m_Unit.OnLeaveStateHandler += OnLeaveState;
+                    m_Unit.OnHurtHandler += OnHurt;
+                    m_Unit.OnDeathHandler += OnDeath;
+                }
+
+            }
         }
-    }
-*/
-    
-    // Use this for initialization
-    public virtual void Start()
-    {
+    */
+
+        // Use this for initialization
+        public virtual void Start()
+        {
+
+        }
+
+        // Update is called once per frame
+        public virtual void Update()
+        {
+
+        }
+
+
+        public virtual void OnEnterState(State state)
+        {
+
+        }
+
+        public virtual void OnUpdateState(float deltaTime, State state)
+        {
+
+
+        }
+
+        public virtual void OnLeaveState(State state)
+        {
+
+        }
+
+        public virtual void OnHurt(BaseActor source)
+        {
+
+        }
+
+        public virtual void OnDeath(BaseActor source)
+        {
+
+        }
+
+        //public 
+
 
     }
-
-    // Update is called once per frame
-    public virtual void Update()
-    {
-
-    }
-
-
-    public virtual void OnEnterState(State state)
-    {
-
-    }
-
-    public virtual void OnUpdateState(float deltaTime, State state)
-    {
-
-
-    }
-
-    public virtual void OnLeaveState(State state)
-    {
-
-    }
-
-    public virtual void OnHurt(BaseActor source)
-    {
-
-    }
-
-    public virtual void OnDeath(BaseActor source)
-    {
-
-    }
-
-    //public 
-
-
 }

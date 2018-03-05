@@ -4,10 +4,12 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
-namespace Game.Common
+namespace XLN.Game.Common
 {
     public class ServiceMgr
     {
+
+
 
         public static ServiceMgr GetServiceMgr()
         {

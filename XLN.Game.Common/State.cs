@@ -1,51 +1,56 @@
 ﻿using System.Collections;
 
-public class State : IState
+namespace XLN.Game.Common
 {
 
-    protected BaseActor m_Actor;
-
-    public BaseActor Actor
+    public class State : IState
     {
-        get
+
+        protected BaseActor m_Actor;
+
+        public BaseActor Actor
         {
-            return m_Actor;
+            get
+            {
+                return m_Actor;
+            }
+
+            set
+            {
+                m_Actor = value;
+                OnActorChagned();
+            }
         }
 
-        set
+        public State()
         {
-            m_Actor = value;
-            OnActorChagned();
+
         }
-    }
 
-    public State()
-    {
+        public virtual void OnEnterState()
+        {
+            if (m_Actor != null)
+                m_Actor.EnterState(this);
+        }
 
-    }
+        public virtual StateResult OnUpdateState(float deltaTime)
+        {
+            if (m_Actor != null)
+                m_Actor.UpdateState(deltaTime, this);
 
-    public virtual void OnEnterState()
-    {
-        if(m_Actor != null)
-            m_Actor.EnterState(this);
-    }
+            return StateResult.Success;
+        }
 
-    public virtual StateResult OnUpdateState(float deltaTime)
-    {
-        if(m_Actor != null)
-            m_Actor.UpdateState(deltaTime, this);
+        public virtual void OnLeaveState()
+        {
+            if (m_Actor != null)
+                m_Actor.LeaveState(this);
+        }
 
-        return StateResult.Success;
-    }
+        protected virtual void OnActorChagned()
+        {
 
-    public virtual void OnLeaveState()
-    {
-        if(m_Actor != null)
-            m_Actor.LeaveState(this);
-    }
-
-    protected virtual void OnActorChagned()
-    {
+        }
 
     }
 

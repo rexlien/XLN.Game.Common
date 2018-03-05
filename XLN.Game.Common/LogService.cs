@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Runtime.InteropServices;
 
-namespace Game.Common
+namespace XLN.Game.Common
 {
     
     public abstract class LogService : IService

@@ -1,18 +1,23 @@
 ﻿using System.Collections;
 
-public enum StateResult
+namespace XLN.Game.Common
 {
-    Success,
-    Running,
-    Fail
-};
 
-public interface IState
-{
-    void OnEnterState();
+    public enum StateResult
+    {
+        Success,
+        Running,
+        Fail
+    };
 
-    StateResult OnUpdateState(float deltaTime);
+    public interface IState
+    {
+        void OnEnterState();
 
-    void OnLeaveState();
-   
+        StateResult OnUpdateState(float deltaTime);
+
+        void OnLeaveState();
+
+    }
+
 }
