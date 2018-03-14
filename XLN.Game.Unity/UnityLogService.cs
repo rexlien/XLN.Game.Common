@@ -12,7 +12,7 @@ namespace XLN.Game.Common
 
 
         public override void Log(LogType type, string log)
-        {
+        { 
             switch (type)
             {
                 case LogType.LT_DEBUG:

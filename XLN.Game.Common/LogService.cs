@@ -34,11 +34,7 @@ namespace XLN.Game.Common
 
         }
 
-
         public abstract void Log(LogType type, string log);
-
-        
-
     }
 }
 

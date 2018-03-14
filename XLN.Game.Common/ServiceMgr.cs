@@ -2,15 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Remoting;
 using System.Text;
+using XLN.Game.Common.Config;
 
 namespace XLN.Game.Common
 {
     public class ServiceMgr
     {
-
-
-
+        
         public static ServiceMgr GetServiceMgr()
         {
             return s_ServiceMgr;
@@ -91,6 +91,38 @@ namespace XLN.Game.Common
             
         }
 
+        static Assembly GetAssemblyByName(string name)
+        {
+            return AppDomain.CurrentDomain.GetAssemblies().
+                   SingleOrDefault(assembly => assembly.GetName().Name == name);
+        }
+
+        public void RegisterService(string assemblyName, string classname)
+        {
+
+            Type t = Type.GetType(classname);
+            if (t == null)
+            { 
+                Assembly assembly = GetAssemblyByName(assemblyName);
+                t = assembly.GetType(classname);
+            }
+            ObjectHandle objHandle = Activator.CreateInstance(assemblyName, classname);
+            if(objHandle != null)
+            {
+                IService service = (IService)objHandle.Unwrap();
+                m_Services.Add(t.GUID, service);    
+            }
+            else
+            {
+                if(LogService.Logger != null)
+                {
+                    LogService.Logger.Log(LogService.LogType.LT_ERROR, "Service can't create:" + classname);
+                }
+                          
+            }
+
+        }
+
         public T GetService<T>() where T : IService
         {
             Type serviceType = typeof(T);
@@ -105,6 +137,19 @@ namespace XLN.Game.Common
             }
             
         }
+
+        public void InjectService(AppConfig config)
+        {
+            foreach(AppConfig.Service service in config.AppServices.ServiceItems)
+            {
+                string className = service.Class;
+                string assemblyName = service.AssemblyName;
+
+                RegisterService(assemblyName, className);
+            }
+                  
+        }
+
 
         
     }

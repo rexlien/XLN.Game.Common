@@ -37,4 +37,8 @@
       <Link>XLNProtocol\thrift\EntityService.thrift</Link>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Config\" />
+    <Folder Include="Interface\" />
+  </ItemGroup>
 </Project>

@@ -3,15 +3,18 @@
 using Thrift.Protocol;
 using Thrift.Transport;
 using System.Threading.Tasks;
-
+using System.Runtime.InteropServices;
 namespace XLN.Game.Common
 {
-    public class EntityService
+    [GuidAttribute("FE12B484-4013-4AF2-8261-1C541F4A03C4")]
+    public class ActorService : IService
     {
 
-        public EntityService()
+        public ActorService()
         {////
             SendEntityMessage();
+
+            //IApplicationContext ctx = ContextRegistry.GetContext();   
         }
 
         public void SendEntityMessage()
