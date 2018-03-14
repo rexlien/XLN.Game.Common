@@ -11,7 +11,7 @@
       <CustomCommands>
         <Command>
           <type>BeforeBuild</type>
-          <command>../bin/mac/thrift -r --gen csharp ../XLNProtocol/thrift/EntityService.thrift</command>
+          <command>../bin/mac/thrift -r --gen csharp ../XLNProtocol/thrift/ActorService.thrift</command>
         </Command>
         <Command>
           <type>Clean</type>
@@ -27,15 +27,7 @@
     <ProjectReference Include="..\..\thrift\lib\csharp\src\Thrift.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="thrift\EntityService.thrift" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Remove="gen-csharp\TestMessage.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\XLNProtocol\thrift\EntityService.thrift">
-      <Link>XLNProtocol\thrift\EntityService.thrift</Link>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Config\" />

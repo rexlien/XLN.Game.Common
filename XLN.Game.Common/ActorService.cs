@@ -26,12 +26,12 @@ namespace XLN.Game.Common
                 //transport.Timeout = 3000;
                 transport.Open();
                 TProtocol protocol = new TBinaryProtocol(transport);
-                Thrift.EntityService.Client client = new Thrift.EntityService.Client(protocol);
+                //Thrift..Client client = new Thrift.EntityService.Client(protocol);
 
-                Thrift.EntityMessage msg = new Thrift.EntityMessage();
-                msg.Id = 0;
-                msg.Name = "MyEntity";
-                client.sendMessage(msg);
+                //Thrift.EntityMessage msg = new Thrift.EntityMessage();
+                //msg.Id = 0;
+                //msg.Name = "MyEntity";
+                //client.sendMessage(msg);
             });
         }
     }
