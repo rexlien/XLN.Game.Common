@@ -7,16 +7,16 @@ using XLN.Game.Unity.Extension;
 
 namespace XLN.Game.Unity
 {
-    public class XMLUnityResource<T> : XMLResource<T>
+    public class UnityXMLResource : XMLResource
     {
-        public XMLUnityResource()
+        public UnityXMLResource()
         {
             
         }
 
         protected override Stream GetStream()
         {
-            byte[] byteArray = Encoding.UTF8.GetBytes(m_XMLText);
+            byte[] byteArray = Encoding.UTF8.GetBytes(m_Resource);
             MemoryStream stream = new MemoryStream(byteArray);
             return stream;
         }
@@ -26,11 +26,11 @@ namespace XLN.Game.Unity
             TextAsset asset = (TextAsset)Resources.Load(path.ResolveRealPath());
             if (!asset)
                 return false;
-            m_XMLText = String.Copy(asset.text);
+            m_Resource = String.Copy(asset.text);
             return true;
         }
 
-        private string m_XMLText;
+        //private string m_XMLText;
 
     };
 }

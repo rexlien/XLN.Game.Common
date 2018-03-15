@@ -1,10 +1,8 @@
 ﻿using System;
 namespace XLN.Game.Common
 {
-    public class ICacheable
+    public interface ICacheable
     {
-        public ICacheable()
-        {
-        }
+        
     }
 }

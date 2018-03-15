@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -8,34 +9,47 @@ using XLN.Game.Unity.Extension;
 
 namespace XLN.Game.Unity
 {
-    public class UnityAssetBundle<T> : Resource<T>
+    public class UnityAssetBundle : Resource<AssetBundle>
     {
-        public UnityAssetBundle()
+
+        class AssetBundleConverter : Converter<UnityEngine.GameObject>
         {
+            public AssetBundleConverter()
+            {
+                
+            }
+            public override UnityEngine.GameObject Convert()
+            {
+               
+                return base.Convert();
+            }
+
+            private AssetBundle m_AssetBundle;
         }
 
-        public override T Deserialize(string key)
+        public UnityAssetBundle()
         {
-            if(m_AssetBundle)
+
+            //m_ConverterMap.Add(typeof(UnityEngine.GameObject), new AssetBundleConverter());
+        }
+
+        public override R Deserialize<R>(string key)
+        {
+            if(m_Resource)
             {   if (key != null)
                 {
                     //TODO: instaiate outside?
                     //GameObject go = (GameObject)UnityEngine.Object.Instantiate(m_AssetBundle.LoadAsset(key));
                     //return (T)(object)go;
-                    return (T)(object)m_AssetBundle.LoadAsset(key);
+                    return (R)(object)m_Resource.LoadAsset(key);
                 }
                 else
                 {
-                    if(typeof(T) == typeof(UnityEngine.Object[]))
-                        return (T)(object)m_AssetBundle.LoadAllAssets(typeof(T));
+                    if(typeof(R) == typeof(UnityEngine.Object[]))
+                        return (R)(object)m_Resource.LoadAllAssets(typeof(R));
                 }
             }   
-            return default(T);
-        }
-
-        public override T Deserialize(Stream stream)
-        {
-            throw new NotImplementedException();
+            return default(R);
         }
 
         public override bool Load(ResourcePath path)
@@ -49,7 +63,7 @@ namespace XLN.Game.Unity
 
             if (stream != null)
             {
-                m_AssetBundle = AssetBundle.LoadFromStream(stream);
+                m_Resource = AssetBundle.LoadFromStream(stream);
                 stream.Close();
             }
 
@@ -68,21 +82,16 @@ namespace XLN.Game.Unity
 
             if (stream != null)
             {
-                m_AssetBundle = await AssetBundle.LoadFromStreamAsync(stream);
+                m_Resource = await AssetBundle.LoadFromStreamAsync(stream);
                 stream.Close();
                 return true;
             }
             return false;
 
-            //return await AssetBundle.LoadFromStreamAsync()
         }
 
-        protected override Stream GetStream()
-        {
-            throw new NotImplementedException();
-        }
 
-        private AssetBundle m_AssetBundle;
+        //private AssetBundle m_AssetBundle;
         private string[] m_AllAssetNames;
 
     }

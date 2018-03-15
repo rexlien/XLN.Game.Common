@@ -8,6 +8,7 @@ using System.Xml.Serialization;
 using UnityEngine;
 using XLN.Game.Common;
 using XLN.Game.Common.Config;
+using XLN.Game.Unity.Extension;
 
 namespace XLN.Game.Unity
 {
@@ -17,35 +18,35 @@ namespace XLN.Game.Unity
     public sealed class UnityResourceService : ResourceService
     {
       
-        protected override Resource<T> GetResource<T>(ResourcePath path)
+        protected override IResource GetResource(ResourcePath path)
         {
             
             ICacheable cacheable = null;
             if (m_Resources.TryGetValue(path.Path, out cacheable))
             {
-                return (Resource<T>)(cacheable);
+                return (IResource)(cacheable);
             }
             else
             {
-                Resource<T> newRes = null;
+                IResource newRes = null;
                 if (path.GetExt() == ".xml")
                 {
-                    newRes = new XMLUnityResource<T>();
+                    newRes = new UnityXMLResource();
                 }
                 else if (path.GetExt() == ".unitybundle")
                 {
-                    newRes = new UnityAssetBundle<T>();
+                    newRes = new UnityAssetBundle();
 
                 }
-                else if (typeof(T) == typeof(UnityEngine.Object) || typeof(T).IsSubclassOf(typeof(UnityEngine.Object)))
+                else
                 {
-                    newRes = new UnityResource<T>();
+                    newRes = new UnityResource<UnityEngine.Object>();
 
                 }
                 if(newRes != null)
                 {
                     newRes.Load(path);
-                    newRes = (Resource<T>)(m_Resources.GetOrAdd(path.Path, newRes));
+                    newRes = (IResource)(m_Resources.GetOrAdd(path.Path, newRes));
                 }
                 return newRes;
             }
@@ -53,34 +54,33 @@ namespace XLN.Game.Unity
         }
 
 
-        protected override async Task<Resource<T>> GetResourceAsync<T>(ResourcePath path)
+        protected override async Task<IResource> GetResourceAsync(ResourcePath path)
         {
             ICacheable cacheable = null;
             if (m_Resources.TryGetValue(path.Path, out cacheable))
             {
-                return (Resource<T>)(cacheable);
+                return (IResource)(cacheable);
             }
             else
             {
-                Resource<T> newRes = null;
+                IResource newRes = null;
                 if (path.GetExt() == ".xml")
                 {
-                    newRes = new XMLUnityResource<T>();
+                    newRes = new UnityXMLResource();
                 }
                 else if (path.GetExt() == ".unitybundle")
                 {
-                    newRes = new UnityAssetBundle<T>();
-
+                    newRes = new UnityAssetBundle();
                 }
-                else if (typeof(T) == typeof(UnityEngine.Object) || typeof(T).IsSubclassOf(typeof(UnityEngine.Object)))
+                else
                 {
-                    newRes = new UnityResource<T>();
+                    newRes = new UnityResource<UnityEngine.Object>();
 
                 }
                 if (newRes != null)
                 {
                     await newRes.LoadAsync(path);
-                    newRes = (Resource<T>)(m_Resources.GetOrAdd(path.Path, newRes));
+                    newRes = (IResource)(m_Resources.GetOrAdd(path.Path, newRes));
                 }
                 return newRes;
             }
@@ -96,10 +96,10 @@ namespace XLN.Game.Unity
             {
                 var t = Task.Run(() =>
                 {
-                    Resource<T> res = GetResource<T>(path);
+                    IResource res = GetResource(path);
                     if (res != null)
                     {
-                        return res.Deserialize(path.SubFile);
+                        return res.Deserialize<T>(path.SubFile);
                     }
                     return default(T);
                 });
@@ -108,10 +108,10 @@ namespace XLN.Game.Unity
             }
             else
             {
-                Resource<T> res = GetResource<T>(path);
+                IResource res = GetResource(path);
                 if (res != null)
                 {
-                    return Task.FromResult(res.Deserialize(path.SubFile));
+                    return Task.FromResult(res.Deserialize<T>(path.SubFile));
                 }
                 else
                 {
@@ -125,10 +125,10 @@ namespace XLN.Game.Unity
         {
            
             Debug.Log("Get Resource Path: " + path.Path);
-            Resource<T> res = await GetResourceAsync<T>(path);
+            IResource res = await GetResourceAsync(path);
             if(res != null)
             {
-                return res.Deserialize(path.SubFile);
+                return res.Deserialize<T>(path.SubFile);
             }
 
             return default(T);

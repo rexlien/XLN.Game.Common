@@ -56,11 +56,11 @@ namespace XLN.Game.Unity
  
         public static Task<R> RunTaskOnUnityScheduler<R>(Func<R> func)
         {
-            //if (SynchronizationContext.Current == UnitySystem.UnitySynchronizationContext)
-            //{
-            //    return Task.FromResult(func());
-            //}
-            //else
+            if (SynchronizationContext.Current == UnitySystem.UnitySynchronizationContext)
+            {
+                return Task.FromResult(func());
+            }
+            else
             {
                 var t = Task.Factory.StartNew(() => { return func(); }, CancellationToken.None, TaskCreationOptions.DenyChildAttach, UnityScheduler);
                 return t;

@@ -3,12 +3,12 @@ using System.IO;
 namespace XLN.Game.Common
 {
     
-    public interface IStreamable<T>
+    public interface IStreamable
     {
         
-        T Deserialize(string key = null);
-        //T Deserialize();
-        T Deserialize(Stream stream);
+        R Deserialize<R>(string key = null);
+
+        //R Deserialize<R>(Stream stream);
     }
 
 }

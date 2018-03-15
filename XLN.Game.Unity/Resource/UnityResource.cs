@@ -8,20 +8,11 @@ namespace XLN.Game.Unity
 {
     public class UnityResource<T> : Resource<T>
     {
-        public override T Deserialize(string key)
+        public override R Deserialize<R>(string key)
         {
-            if (m_Resource is UnityEngine.GameObject)
-            {
-                object ret = (object)m_Resource;//UnityEngine.Object.Instantiate((UnityEngine.Object)(object)m_Resource);
-                return (T)(ret);
-            }
-            else
-                return m_Resource;
-        }
+            object ret = (object)m_Resource;
+            return (R)(ret);
 
-        public override T Deserialize(Stream stream)
-        {
-            throw new NotImplementedException();
         }
 
         public override bool Load(ResourcePath path)
@@ -31,15 +22,6 @@ namespace XLN.Game.Unity
           
             return true;
         }
-
-        protected override Stream GetStream()
-        {
-            throw new NotImplementedException();
-        }
-
-
-
-        private T m_Resource;
 
     }
 }

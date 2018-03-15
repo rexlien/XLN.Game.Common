@@ -16,12 +16,12 @@ namespace XLN.Game.Common
             
         }
 
-        virtual protected Task<Resource<T>> GetResourceAsync<T>(ResourcePath path)
+        virtual protected Task<IResource> GetResourceAsync(ResourcePath path)
         {
             return null;
         }
 
-        virtual protected Resource<T> GetResource<T>(ResourcePath path)
+        virtual protected IResource GetResource(ResourcePath path)
         {
             return null;
         }

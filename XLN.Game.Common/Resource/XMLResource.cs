@@ -4,23 +4,16 @@ using System.Xml.Serialization;
 
 namespace XLN.Game.Common
 {
-    public class XMLResource<T> : Resource<T>
+    public class XMLResource : Resource<string>
     {
         public XMLResource()
         {
         }
-
-        public override T Deserialize(Stream stream)
+       
+        public override R Deserialize<R>(string key)
         {
-            XmlSerializer serializer = new XmlSerializer(typeof(T));
-            T res = (T)serializer.Deserialize(stream);
-            return res;
-        }
-
-        public override T Deserialize(string key)
-        {
-            XmlSerializer serializer = new XmlSerializer(typeof(T));
-            T res = (T)serializer.Deserialize(GetStream());
+            XmlSerializer serializer = new XmlSerializer(typeof(R));
+            R res = (R)serializer.Deserialize(GetStream());
             return res;
         }
 
@@ -29,7 +22,7 @@ namespace XLN.Game.Common
             return false;
         }
 
-        protected override Stream GetStream()
+        protected virtual Stream GetStream()
         {
             return null;
         }
