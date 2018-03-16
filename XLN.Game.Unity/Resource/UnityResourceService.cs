@@ -18,6 +18,12 @@ namespace XLN.Game.Unity
     public sealed class UnityResourceService : ResourceService
     {
       
+        public UnityResourceService()
+        {
+            RegisterResourceCreator(".xml", new ResourceService.ResoruceCreator<UnityXMLResource>());
+            RegisterResourceCreator(".unitybundle", new ResourceService.ResoruceCreator<UnityAssetBundle>());
+        }
+
         protected override IResource GetResource(ResourcePath path)
         {
             
@@ -28,21 +34,15 @@ namespace XLN.Game.Unity
             }
             else
             {
+                IResourceCreator creator = GetCreator(path.GetExt());
                 IResource newRes = null;
-                if (path.GetExt() == ".xml")
-                {
-                    newRes = new UnityXMLResource();
-                }
-                else if (path.GetExt() == ".unitybundle")
-                {
-                    newRes = new UnityAssetBundle();
-
-                }
-                else
+                if (creator == null)
                 {
                     newRes = new UnityResource<UnityEngine.Object>();
-
                 }
+                else
+                    newRes = creator.Create();
+                
                 if(newRes != null)
                 {
                     newRes.Load(path);
@@ -64,19 +64,14 @@ namespace XLN.Game.Unity
             else
             {
                 IResource newRes = null;
-                if (path.GetExt() == ".xml")
-                {
-                    newRes = new UnityXMLResource();
-                }
-                else if (path.GetExt() == ".unitybundle")
-                {
-                    newRes = new UnityAssetBundle();
-                }
-                else
+                IResourceCreator creator = GetCreator(path.GetExt());
+
+                if (creator == null)
                 {
                     newRes = new UnityResource<UnityEngine.Object>();
-
                 }
+                else
+                    newRes = creator.Create();
                 if (newRes != null)
                 {
                     await newRes.LoadAsync(path);

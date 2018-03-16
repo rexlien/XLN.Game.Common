@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Networking;
 using XLN.Game.Common;
 using XLN.Game.Unity.Extension;
 
@@ -54,37 +55,57 @@ namespace XLN.Game.Unity
 
         public override bool Load(ResourcePath path)
         {
-            Stream stream = null;
             if (path.Type == ResourcePath.PathType.File)
             {
+                Stream stream = null;
                 stream = File.OpenRead(path.ResolveRealPath());
+                if (stream != null)
+                {
+                    m_Resource = AssetBundle.LoadFromStream(stream);
+                    stream.Close();
+                    return true;
+                }
 
             }
-
-            if (stream != null)
+            else if (path.Type == ResourcePath.PathType.HTTP)
             {
-                m_Resource = AssetBundle.LoadFromStream(stream);
-                stream.Close();
+                UnityWebRequest www = UnityWebRequest.GetAssetBundle(path.ResolveRealPath());
+                www.SendWebRequest();
+
+                if (www.isNetworkError || www.isHttpError)
+                {
+                    return false;
+                }
+                m_Resource = DownloadHandlerAssetBundle.GetContent(www);
             }
-
-
-            return true;
+            return false;
         }
 
         public override async Task<bool> LoadAsync(ResourcePath path)
         {
-            Stream stream = null;
+            
             if (path.Type == ResourcePath.PathType.File)
             {
+                Stream stream = null;
                 stream = File.OpenRead(path.ResolveRealPath());
+                if (stream != null)
+                {
+                    m_Resource = await AssetBundle.LoadFromStreamAsync(stream);
+                    stream.Close();
+                    return true;
+                }
 
             }
-
-            if (stream != null)
+            else if(path.Type == ResourcePath.PathType.HTTP)
             {
-                m_Resource = await AssetBundle.LoadFromStreamAsync(stream);
-                stream.Close();
-                return true;
+                UnityWebRequest www = UnityWebRequest.GetAssetBundle(path.ResolveRealPath());
+                await www.SendWebRequest();
+
+                if (www.isNetworkError || www.isHttpError)
+                {
+                    return false;
+                }
+                m_Resource = DownloadHandlerAssetBundle.GetContent(www);
             }
             return false;
 

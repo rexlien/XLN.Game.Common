@@ -29,6 +29,43 @@ namespace XLN.Game.Unity.Extension
             return awaiter;
         }
 
+        public static SimpleCoroutineAwaiter<UnityEngine.Object> GetAwaiter(this AssetBundleRequest instruction)
+        {
+            var awaiter = new SimpleCoroutineAwaiter<UnityEngine.Object>();
+            UnitySystem.RunOnUnityScheduler(() => UnitySystem.SystemBehavior.StartCoroutine(
+                InstructionWrappers.AssetBundleRequest(awaiter, instruction)));
+            return awaiter;
+        }
+
+        public static SimpleCoroutineAwaiter<WWW> GetAwaiter(this WWW instruction)
+        {
+            return GetAwaiterReturnSelf(instruction);
+        }
+
+        public static SimpleCoroutineAwaiter<AsyncOperation> GetAwaiter(this AsyncOperation instruction)
+        {
+            return GetAwaiterReturnSelf(instruction);
+        }
+
+
+        static SimpleCoroutineAwaiter<T> GetAwaiterReturnSelf<T>(T instruction)
+        {
+            var awaiter = new SimpleCoroutineAwaiter<T>();
+            UnitySystem.RunOnUnityScheduler(() => UnitySystem.SystemBehavior.StartCoroutine(
+                InstructionWrappers.ReturnSelf(awaiter, instruction)));
+            return awaiter;
+        }
+
+        public static SimpleCoroutineAwaiter<UnityEngine.Object> GetAwaiter(this ResourceRequest instruction)
+        {
+            var awaiter = new SimpleCoroutineAwaiter<UnityEngine.Object>();
+            UnitySystem.RunOnUnityScheduler(() => UnitySystem.SystemBehavior.StartCoroutine(
+                InstructionWrappers.ResourceRequest(awaiter, instruction)));
+            return awaiter;
+        }
+
+
+
 
 
         static void Assert(bool condition)

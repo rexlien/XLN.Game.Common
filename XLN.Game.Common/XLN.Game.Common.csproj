@@ -17,6 +17,10 @@
           <type>Clean</type>
           <command>rm -rf gen-csharp</command>
         </Command>
+        <Command>
+          <type>BeforeBuild</type>
+          <command>../bin/mac/thrift -r --gen csharp ../XLNProtocol/thrift/NetworkService.thrift</command>
+        </Command>
       </CustomCommands>
     </CustomCommands>
   </PropertyGroup>

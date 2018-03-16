@@ -28,6 +28,7 @@ namespace XLN.Game.Unity
                     s_GameObject.hideFlags = HideFlags.HideInHierarchy;
                     UnityEngine.Object.DontDestroyOnLoad(s_GameObject);
                     SystemBehavior = s_GameObject.AddComponent<SystemBehavior>();
+                    s_GameObject.AddComponent<ServiceBehavior>();
                     Debug.Log("System Object Added");
 
                 }
