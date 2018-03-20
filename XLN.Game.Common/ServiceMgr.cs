@@ -48,6 +48,16 @@ namespace XLN.Game.Common
             
         }
 
+        public bool OnDestroy()
+        {
+            foreach (KeyValuePair<Guid, IService> s in m_Services)
+            {
+                s.Value.OnDestroy();
+            }
+            return true;
+
+        }
+
         public bool PostUpdate(float delta)
         {
             foreach (KeyValuePair<Guid, IService> s in m_Services)
@@ -90,6 +100,23 @@ namespace XLN.Game.Common
             }
             
         }
+
+        public void RegisterIService(IService service) 
+        {
+            
+            Guid guid = service.GetType().GUID;
+           
+            {
+                IService retService = null;
+                if (!m_Services.TryGetValue(guid, out retService))
+                {
+                    m_Services.Add(guid, service);
+
+                }
+            }
+
+        }
+
 
         static Assembly GetAssemblyByName(string name)
         {

@@ -28,6 +28,21 @@ namespace XLN.Game.Common.Config
 
         }
 
+        public class Server
+        {
+
+            [System.Xml.Serialization.XmlAttribute("name")]
+            public string Name { get; set; }
+
+            [System.Xml.Serialization.XmlAttribute("ip")]
+            public string IP { get; set; }
+
+            [System.Xml.Serialization.XmlAttribute("port")]
+            public int Port { get; set; }
+
+
+        }
+
 
         public class Services
         {
@@ -35,11 +50,18 @@ namespace XLN.Game.Common.Config
             public List<Service> ServiceItems { get; set; }
         }
 
-
+        public class Networks
+        {
+            [XmlElement("Server")]
+            public List<Server> ServerItems  { get; set; }
+        }
 
 
         [XmlElement("Services")]
         public Services AppServices { get; set; }
+
+        [XmlElement("Network")]
+        public Networks AppNetworks { get; set; }
 
     }
 

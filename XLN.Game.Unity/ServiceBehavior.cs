@@ -11,16 +11,11 @@ namespace XLN.Game.Unity
         void Awake()
         {
             ServiceMgr.GetServiceMgr().RegisterService(new UnityLogService());
+            //LogService service =ServiceMgr.GetServiceMgr().GetService<LogService>();
 
             UnityResourceService resourceService = new UnityResourceService();
-            ServiceMgr.GetServiceMgr().RegisterService(resourceService);
-            Task<AppConfig> appConfig = resourceService.Get<AppConfig>(new ResourcePath(ResourcePath.PathType.Resource, "XLNConfig.xml"));
-            if (appConfig != null)
-            {
-                ServiceMgr.GetServiceMgr().InjectService(appConfig.Result);
-            }
 
-            ServiceMgr.GetServiceMgr().Init();
+            XLN.Game.Common.ApplicationContext.Init(new UnityResourceService(), UnitySystem.UnityScheduler);
         }
 
 
@@ -34,6 +29,11 @@ namespace XLN.Game.Unity
         void Update()
         {
             ServiceMgr.GetServiceMgr().Update(Time.deltaTime);
+        }
+
+        void OnApplicationQuit()
+        {
+            ServiceMgr.GetServiceMgr().OnDestroy();
         }
 
     }
