@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -6,6 +7,7 @@ using Thrift.Protocol;
 using Thrift.Transport;
 using XLN.Game.Common.Config;
 using XLN.Game.Common.Thrift;
+
 
 namespace XLN.Game.Common
 {
@@ -19,6 +21,8 @@ namespace XLN.Game.Common
             m_ConnectionErrorAction += OnConnectError;
 
             m_ServerConfig = ApplicationContext.AppConig.AppNetworks.ServerItems.Find(pred => pred.Name == "GameServer");
+
+
         }
 
         public class NetworkServieException : Exception
@@ -43,7 +47,7 @@ namespace XLN.Game.Common
             }
         }
 
-        private Action<TFramedTransport> m_ConnectedAction;
+        private Action<TTransport> m_ConnectedAction;
         private Action m_DisConnectedAction;
         private Action<Exception> m_ConnectionErrorAction;
         protected AppConfig.Server m_ServerConfig;
@@ -70,24 +74,37 @@ namespace XLN.Game.Common
 
             var task = Task.Factory.StartNew(() =>
             {
-                TSocket socket = new TSocket(m_ServerConfig.IP, m_ServerConfig.Port);
-
-                //TODO this also set the recevie timeout..which could be not we wanted
+                TAsyncSocket socket = new TAsyncSocket(m_ServerConfig.IP, m_ServerConfig.Port);
                 socket.Timeout = 10000;
-                TFramedTransport transport = new TFramedTransport(socket);
-                try
-                {
-                    transport.Open();
-                }
-                catch (TTransportException e)
-                {
-                    LogService.Logger.Log(LogService.LogType.LT_ERROR, e.Message);
+                TTransport transport = new THeaderTransport(socket);
+                AutoResetEvent barrier = new AutoResetEvent(false);
 
+                TTransportException tException = new TTransportException("Connection Timeout");
+
+                socket.connectHandler += (object sender, System.Net.Sockets.SocketAsyncEventArgs e) => 
+                {
+                    
+                    if(e.SocketError == SocketError.Success)
+                    {
+                         tException = null;
+                    }
+                    else 
+                    {
+                        tException = new TTransportException(e.SocketError.ToString());
+                    }
+                    barrier.Set();
+                };
+                //TODO this also set the recevie timeout..which could be not we wanted
+
+                transport.Open();
+                barrier.WaitOne(10000);
+                TTransportException ex = tException;
+                if(ex != null)
+                {
+                    LogService.Logger.Log(LogService.LogType.LT_ERROR, ex.Message);
                     transport.Close();
                     transport = null;
-                    socket = null;
-                    throw e;
-
+                    throw ex;
                 }
                 return transport;
             });
@@ -111,12 +128,10 @@ namespace XLN.Game.Common
                         var transport = t.Result;
 
                         m_Transport = transport;
-                        TProtocol protocol = new TBinaryProtocol(m_Transport);
-                        Thrift.NetworkService.Client newClient = new Thrift.NetworkService.Client(protocol);
-                        lock(m_NetworkServiceClientLock)
-                        {
-                            m_NetworkServiceClient = newClient;
-                        }
+                        TProtocol protocol = new THeaderProtocol((THeaderTransport)m_Transport, THeaderProtocol.PROTOCOL_TYPES.T_BINARY_PROTOCOL);
+                        m_NetworkServiceClient = new Thrift.NetworkService.Client(protocol);;
+                        m_ActorServiceClient = new Thrift.ActorService.Client(protocol);
+
                         m_ConnectedAction(m_Transport);
                         return new ConnectionResult(true, null);
 
@@ -136,10 +151,9 @@ namespace XLN.Game.Common
         private void ClearConnection()
         {
             //m_HeartbeatTaskCancelOperation.Cancel();
-            lock (m_NetworkServiceClientLock)
-            {
-                m_NetworkServiceClient = null;
-            }
+
+            m_NetworkServiceClient = null;
+            m_ActorServiceClient = null;
 
             if (m_Transport != null)
             {
@@ -158,7 +172,7 @@ namespace XLN.Game.Common
         }
 
 
-        protected virtual void OnConnected(TFramedTransport transport)
+        protected virtual void OnConnected(TTransport transport)
         {
             StartHeartbeat();
         }
@@ -179,13 +193,16 @@ namespace XLN.Game.Common
             m_DisConnectedAction += action;
         }
 
+        public void RegisterConnectedAction(Action<TTransport> action)
+        {
+            m_ConnectedAction += action;
+        }
+
         protected void StartHeartbeat()
         {
             if (m_HeartbeatTask != null)
                 return;
-
-            //CancellationToken token = m_HeartbeatTaskCancelOperation.Token;
-
+            
             //TODO maybe a scheduller in dedicated thread
             //TaskFactory factory = new TaskFactory(new TaskScheduler(null));
             var task = Task.Factory.StartNew(() =>
@@ -202,16 +219,9 @@ namespace XLN.Game.Common
             Thrift.NetworkService.Client networkClient = null;
             while (true)
             {
-                //if(token.IsCancellationRequested)
-                //{
-                //    await Task.Delay(-1, m_HeartbeatStopperCancelOperation.Token);
-                //}
-                
-                lock (m_NetworkServiceClientLock)
-                {
-                    networkClient = NetworkServiceClient;
-                }
-               
+             
+                networkClient = NetworkServiceClient;
+                  
                 try
                 {
                     if (networkClient != null)
@@ -220,19 +230,36 @@ namespace XLN.Game.Common
                         //DateTimeOffset.
                         TimeSpan t = (DateTime.UtcNow - new DateTime(1970, 1, 1));
                         long timestamp = (long)t.TotalSeconds;
-                        networkClient.heartbeat(timestamp);
+
+                        LogService.Logger.Log(LogService.LogType.LT_DEBUG, "heartbeat await start");
+                        long local = await Task.Factory.FromAsync(networkClient.send_heartbeat(null, null, 1000), (asyncResult) =>
+                        {
+                            //asyncResult.
+                            //var task = Task.Factory.StartNew(() => { });
+                            //return 1;
+
+                            return networkClient.End_heartbeat(asyncResult);
+                        
+                        
+                        });//networkClient.End_heartbeat);
+                        LogService.Logger.Log(LogService.LogType.LT_DEBUG, "heartbeat await end");
                     }
                 }
-                catch(System.IO.IOException ex)
+                catch(TTransportException ex)
                 {
                     LogService.Logger.Log(LogService.LogType.LT_WARNING, ex.ToString());
-                    var t = Task.Factory.StartNew( () =>
+                    await Task.Factory.StartNew( () =>
                     { 
                         ClearConnection();
                         m_DisConnectedAction();
-                        //OnDisconnected();
+
 
                     }, CancellationToken.None, TaskCreationOptions.None, ApplicationContext.MainScheduler);
+                }
+                catch(Exception ex)
+                {
+                    LogService.Logger.Log(LogService.LogType.LT_WARNING, ex.StackTrace);
+                    throw ex;
                 }
 
                 //send heartbeat every 10 seconds
@@ -250,9 +277,60 @@ namespace XLN.Game.Common
             }
         }
 
-        protected object m_NetworkServiceClientLock = new object();
+        protected Thrift.ActorService.Client m_ActorServiceClient;
+        public Thrift.ActorService.Client ActorServiceClient
+        {
+            get
+            {
+                return m_ActorServiceClient;
+            }
+        }
 
-        private TFramedTransport m_Transport;
+       /*
+        public async Task<R> ClientSend<Client, R>(string processorName, Func<Client, Task<R>> thriftAction, Action<Task> onPostTransport, Action<Task> onSuccess,
+            Action<Task> onFail, int timeoutMillis)
+        {
+            Task task = null;
+            task = Task.Factory.StartNew(() =>
+            {
+                try
+                {
+                    Client protocol = (Client)Activator.CreateInstance(typeof(Client), m_Transport);
+                    return await thriftAction(protocol);
+
+                    if (onPostTransport != null)
+                        onPostTransport(task);
+                }
+                catch (Exception e)
+                {
+                    throw e;
+                }
+
+            }, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Default)
+                .ContinueWith((t) =>
+                {
+                    if (t.Exception == null)
+                    {
+                        if (onSuccess != null)
+                            onSuccess(t);
+                    }
+                    else
+                    {
+                        
+                        if (onFail != null)
+                        {
+                            onFail(t);
+                        }
+                    }
+
+                }, ApplicationContext.MainScheduler);
+
+        }
+        */
+
+        //protected object m_NetworkServiceClientLock = new object();
+
+        private TTransport m_Transport;
         //private CancellationTokenSource m_HeartbeatTaskCancelOperation = new CancellationTokenSource();
         //private CancellationTokenSource m_HeartbeatStopperCancelOperation = new CancellationTokenSource();
         private Task<ConnectionResult> m_ConnectionTask;

@@ -7,6 +7,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>full</DebugType>
     <OutputPath>..\..\Assets\XLN.Game.Common</OutputPath>
+    <DefineConstants>TRACE;SILVERLIGHT;DEBUG;NET45</DefineConstants>
     <CustomCommands>
       <CustomCommands>
         <Command>
@@ -28,13 +29,16 @@
     <OutputPath>..\..\Assets\XLN.Game.Common</OutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\thrift\lib\csharp\src\Thrift.csproj" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Remove="gen-csharp\TestMessage.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Config\" />
     <Folder Include="Interface\" />
+    <Folder Include="Thrift\" />
+    <Folder Include="Utils\" />
+    <Folder Include="Extension\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\thrift\lib\csharp\src\Thrift.45.csproj" />
   </ItemGroup>
 </Project>
