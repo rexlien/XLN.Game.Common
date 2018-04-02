@@ -32,6 +32,7 @@ using XLN.Game.Common;
 using System.Threading.Tasks;
 using XLN.Game.Common.Extension;
 using static XLN.Game.Common.Extension.Extension;
+using Force.Crc32;
 
 namespace Thrift.Transport
 {
@@ -115,6 +116,11 @@ namespace Thrift.Transport
             set
             {
                 timeout = value;
+            }
+
+            get
+            {
+                return timeout;
             }
         }
 
@@ -214,15 +220,15 @@ namespace Thrift.Transport
             
         }
 
+        private object m_SocketReadLock = new object();
+
         public Task<MemoryStream> UnFrame(UInt32 seqID)
         {
            
-            //SocketReceiveContext receiveContext = null;
-            //socketEventArg.Completed += new EventHandler<SocketAsyncEventArgs>(delegate (object s, SocketAsyncEventArgs e)
-            EventHandler<SocketAsyncEventArgs> h = (o, ea) =>
+            EventHandler<SocketAsyncEventArgs> handler = (o, ea) =>
             {
                 SocketReceiveContext receiveContext = (SocketReceiveContext)ea.UserToken;
-                LogService.Logger.Log(LogService.LogType.LT_DEBUG, "ReciveComplete SeqID: "+ receiveContext.m_SeqID.ToString());
+
 
                 if (ea.SocketError == SocketError.Success)
                 {
@@ -231,38 +237,37 @@ namespace Thrift.Transport
                 }
                 else
                 {
-                    
+                    LogService.Logger.Log(LogService.LogType.LT_ERROR, ea.ToString());
                 }
+
                 receiveContext.m_ReadCompleteEvent.Set();
 
+              
 
             };
-          
-            // Sets the state of the event to nonsignaled, causing threads to block
-            //inContext.m_ReadCompleteEvent.Reset();
-            //Task
-            SocketReceiveContext headerReceiveContext = new SocketReceiveContext();
-            SocketReceiveContext contentReceiveContext = new SocketReceiveContext();
+
             TaskCompletionSource<MemoryStream> retSource = new TaskCompletionSource<MemoryStream>();
-            //headerReceiveContext.m_ReceiveType = SocketReceiveContext.ReceiveType.HEADER;
-
-            s_IoReadTaskFactory.StartNew(() =>
+                
+            Task.Factory.StartNew(() =>
             {
-                SocketAsyncEventArgs headerEventArg = new SocketAsyncEventArgs();
+                SocketReceiveContext headerReceiveContext = new SocketReceiveContext();
+                headerReceiveContext.m_SeqID = seqID;
 
+
+                SocketAsyncEventArgs headerEventArg = new SocketAsyncEventArgs();
                 MemoryStream headerStream = new MemoryStream(12);
                 headerStream.SetLength(4);
-                //headerReceiveContext.m_InputStream = headerStream;
-
                 headerEventArg.SetBuffer(headerStream.GetBuffer(), 0, 4);
                 headerEventArg.UserToken = headerReceiveContext;
+                headerEventArg.RemoteEndPoint = socket.RemoteEndPoint;
 
-                headerEventArg.Completed += h;
+                headerEventArg.Completed += handler;
 
-                lock(socket)
+                lock(m_SocketReadLock)
                 {
+
                     socket.ReceiveAsync(headerEventArg);
-                    if (!headerReceiveContext.m_ReadCompleteEvent.WaitOne(timeout))
+                    if (!headerReceiveContext.m_ReadCompleteEvent.WaitOne(Timeout))
                     {
                         retSource.SetException(new TTransportException(TTransportException.ExceptionType.TimedOut, "Socket recv timeout"));
                         return;
@@ -284,49 +289,41 @@ namespace Thrift.Transport
 
                     }
                    
-
-                    SocketAsyncEventArgs contentEventArg = new SocketAsyncEventArgs();
                     MemoryStream content = new MemoryStream((int)frameSize);
                     content.SetLength(frameSize);
-                    contentReceiveContext.m_InputStream = content;
+                    int byteTransferred = 0;
+                    int remaining = (int)frameSize;
 
-                    contentEventArg.UserToken = contentReceiveContext;
-                    contentEventArg.SetBuffer(content.GetBuffer(), 0, (int)frameSize);
-                    contentEventArg.Completed += h;
-
-                    socket.ReceiveAsync(contentEventArg);
-
-
-                    if (!contentReceiveContext.m_ReadCompleteEvent.WaitOne(timeout))
+                    while (remaining > 0)
                     {
-                        retSource.SetException(new TTransportException(TTransportException.ExceptionType.TimedOut, "Socket recv timeout"));
+                        SocketReceiveContext contentReceiveContext = new SocketReceiveContext();
+                        contentReceiveContext.m_SeqID = seqID;
+                        SocketAsyncEventArgs contentEventArg = new SocketAsyncEventArgs();
+                        contentEventArg.UserToken = contentReceiveContext;
+                        contentEventArg.SetBuffer(content.GetBuffer(), byteTransferred, (int)remaining);
+                        contentEventArg.RemoteEndPoint = socket.RemoteEndPoint;
+                        contentEventArg.Completed += handler;
+
+                        socket.ReceiveAsync(contentEventArg);
+
+                        if(!contentReceiveContext.m_ReadCompleteEvent.WaitOne(Timeout))
+                        {
+                            retSource.SetException(new TTransportException(TTransportException.ExceptionType.TimedOut, "Unexpected timeout"));
+                            return;
+                        }
+                        byteTransferred += contentEventArg.BytesTransferred;
+                        remaining -= contentEventArg.BytesTransferred;
+
                     }
-                    else
-                    {
-                        retSource.SetResult(content);
-                    }
+                   
+                    retSource.SetResult(content);
+
 
 
                 }
 
-                //LogService.Logger.Log(LogService.LogType.LT_DEBUG, "io read task leave");
-
             }, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Default);
 
-            // Make an asynchronous Receive request over the socket
-            //socket.ReceiveAsync(socketEventArg);
-
-            // Block the UI thread for a maximum of TIMEOUT_MILLISECONDS milliseconds.
-            // If no response comes back within this time then proceed
-            //inContext.m_ReadCompleteEvent.WaitOne(this.timeout);
-
-           
-
-           
-            //if (inContext.m_SeqID != receiveContext.m_SeqID)
-            //{
-            //    throw new TTransportException("sequence id not matched");
-            //}
 
             return retSource.Task;
         }
@@ -369,7 +366,7 @@ namespace Thrift.Transport
         {
             // Extract request and reset buffer
 
-            LogService.Logger.Log(LogService.LogType.LT_DEBUG, "flush " + seqID.ToString() + " size: " + outputStream.Value.Length);
+            //LogService.Logger.Log(LogService.LogType.LT_DEBUG, "flush " + seqID.ToString() + " size: " + outputStream.Value.Length);
 
             byte[] data = outputStream.Value.ToArray();
             m_StreamPool.Enqueue(outputStream.Value);
@@ -385,7 +382,7 @@ namespace Thrift.Transport
             socketEventArg.SetBuffer(data, 0, data.Length);
 
             s_IoWriteTaskFactory.StartNew(() =>
-            {
+            {  
                 socket.SendAsync(socketEventArg);
             });
             return flushAsyncResult;

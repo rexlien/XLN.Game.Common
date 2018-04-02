@@ -26,6 +26,8 @@ using XLN.Game.Common.Utils;
 using XLN.Game.Common.Extension;
 using XLN.Game.Common;
 using System.Threading.Tasks;
+using System.Text;
+using Force.Crc32;
 
 namespace Thrift.Transport
 {
@@ -77,20 +79,11 @@ namespace Thrift.Transport
             return stream;
 
         });
-        private readonly ThreadLocal<MemoryStream> readBuffer = new ThreadLocal<MemoryStream>(() =>
-       {
-           MemoryStream stream = new MemoryStream(1024);
-           //stream.SetLength(HeaderSize);
-           stream.Seek(0, SeekOrigin.End);
-           return stream;
-
-       });
-        //private const int HeaderSize = 4;
-        //private readonly ThreadLocal<byte[]> headerBuf = new ThreadLocal<byte[]>( () => { return new byte[HeaderSize]; });
+        private readonly ThreadLocal<MemoryStream> readBuffer = new ThreadLocal<MemoryStream>();
         private readonly TAsyncSocket m_AsyncSocket;
 
-        private ThreadLocal<Dictionary<string, string>> m_WriteHeaders = new ThreadLocal<Dictionary<string, string>>(() => { return new Dictionary<string, string>(); });
-        private ThreadLocal<Dictionary<string, string>> m_ReadHeaders = new ThreadLocal<Dictionary<string, string>>(() => { return new Dictionary<string, string>(); });
+        //private ThreadLocal<Dictionary<string, string>> m_WriteHeaders = new ThreadLocal<Dictionary<string, string>>(() => { return new Dictionary<string, string>(); });
+        //private ThreadLocal<Dictionary<string, string>> m_ReadHeaders = new ThreadLocal<Dictionary<string, string>>(() => { return new Dictionary<string, string>(); });
        
        
         public THeaderTransport(TAsyncSocket transport)
@@ -105,12 +98,12 @@ namespace Thrift.Transport
 
         public void SetHeader(string header, string value)
         {
-            m_WriteHeaders.Value.Add(header, value);
+            //m_WriteHeaders.Value.Add(header, value);
         }
 
         public void ClearHeader()
         {
-            m_WriteHeaders.Value.Clear();
+            //m_WriteHeaders.Value.Clear();
         }
 
         protected void WriteString(byte[] outByte, string str)
@@ -148,18 +141,38 @@ namespace Thrift.Transport
             m_AsyncSocket.Close();
         }
 
+        public void BeginReadMessage()
+        {
+            
+        }
+
+        public void EndReadMessage()
+        {
+            if (readBuffer.Value != null)
+            {
+                readBuffer.Value.Close();
+                readBuffer.Value = null;
+            }
+        }
+
         public override int Read(byte[] buf, int off, int len)
         {
             CheckNotDisposed();
             ValidateBufferArgs(buf, off, len);
             if (!IsOpen)
                 throw new TTransportException(TTransportException.ExceptionType.NotOpen);
-            int got = readBuffer.Value.Read(buf, off, len);
-            if (got > 0)
+            if (readBuffer.Value != null)
             {
-                return got;
-            }
+                int got = readBuffer.Value.Read(buf, off, len);
+                if(got == 0)
+                {
+                    throw new TTransportException("un expected error");
+                }
 
+                return got;
+
+            }
+           
             // Read another frame of data
             ReadFrame();
 
@@ -170,6 +183,7 @@ namespace Thrift.Transport
 
         private void ReadFrame()
         {
+            //readBuffer.Value = null;
             //TAsyncSocket.SocketReceiveContext receiveContext = new TAsyncSocket.SocketReceiveContext();
             //receiveContext.m_SeqID = s_CurSequence.Value;
 
@@ -203,66 +217,101 @@ namespace Thrift.Transport
             //    byte[] buff = readBuffer.Value.GetBuffer();
             //    m_AsyncSocket.ReadWithContext(buff, 0, (Int32)frameSize, receiveContext);
             //}
+            //LogService.Logger.Log(LogService.LogType.LT_DEBUG, "Read frame called");
 
-            MemoryStream content = m_AsyncSocket.UnFrame(s_CurSequence.Value).Result;
-            using (BinaryReader reader = new BinaryReader(content, System.Text.Encoding.Default, true))
+            Task<MemoryStream> t = m_AsyncSocket.UnFrame(s_CurSequence.Value);
+            MemoryStream content = null;
+            try
             {
-                UInt16 magic = reader.ntoh16();
-                UInt16 flags = reader.ntoh16();
-                UInt32 seqID = reader.ntoh32();
+                content = t.Result;
+            }
+            catch(AggregateException ex)
+            {
+                
+                XLN.Game.Common.Utils.Exception.LogAggregateException<TTransportException>(ex);
+                throw ex;
+            }
+           
 
-                LogService.Logger.Log(LogService.LogType.LT_DEBUG, "sent SeqID: "+ s_CurSequence.Value + " received SeqID" + seqID );
-
-                UInt16 headerSize = reader.ntoh16();
-
-                long headerStart = content.Position;
-                long headerSizeByte = headerSize * 4;
-                long headerEnd = headerStart + headerSizeByte;
-                m_InProtocolID = (Int16)reader.ntohVarint32();//Varint.ReadVarint32(reader);
-
-                UInt16 transofromSize = (UInt16)Varint.ReadVarint32(reader);
-                for (int i = 0; i < transofromSize; i++)
-                {   //TODO support transform
-                    UInt32 transformID = (UInt32)reader.ntohVarint32();
-                }
-
-                while(content.Position != headerEnd)
+            if (content != null)
+            {
+                using (BinaryReader reader = new BinaryReader(content, System.Text.Encoding.Default, true))
                 {
-                    UInt32 infoID = (UInt32)reader.ntohVarint32();
-                    if(infoID == 0)
-                    {
-                        break;
+                    UInt16 magic = reader.ntoh16();
+                    UInt16 flags = reader.ntoh16();
+                    UInt32 seqID = reader.ntoh32();
+
+
+                    UInt16 headerSize = reader.ntoh16();
+
+                    long headerStart = content.Position;
+                    long headerSizeByte = headerSize * 4;
+                    long headerEnd = headerStart + headerSizeByte;
+                    m_InProtocolID = (Int16)reader.ntohVarint32();//Varint.ReadVarint32(reader);
+
+                    LogService.Logger.Log(LogService.LogType.LT_DEBUG, "sent SeqID: " + s_CurSequence.Value + " received SeqID" + seqID + " protocolID:" + m_InProtocolID + " size: " + content.Length);
+
+
+                    UInt16 transofromSize = (UInt16)Varint.ReadVarint32(reader);
+                    for (int i = 0; i < transofromSize; i++)
+                    {   //TODO support transform
+                        UInt32 transformID = (UInt32)reader.ntohVarint32();
                     }
 
-                    //TODO support header
-                }
+                    while (content.Position != headerEnd)
+                    {
+                        UInt32 infoID = (UInt32)reader.ntohVarint32();
+                        if (infoID == 0)
+                        {
+                            break;
+                        }
 
-                //end of header
-                content.Seek(headerEnd, SeekOrigin.Begin);
+                        //TODO support header
+                    }
 
-                //this may not be for our sequence
-                TaskCompletionSource<TAsyncSocket.PendingBufferEntry> taskSource = null;
-                m_AsyncSocket.PendingBuffers.TryGetValue(seqID, out taskSource);
-                if (taskSource != null)
-                {
-                    TAsyncSocket.PendingBufferEntry entry = new TAsyncSocket.PendingBufferEntry();
-                    entry.m_ContentBuffer = content;
-                    taskSource.SetResult(entry);
+                    //end of header
+                    content.Seek(headerEnd, SeekOrigin.Begin);
+
+
+                    //LogService.Logger.Log(XLN.Game.Common.LogService.LogType.LT_DEBUG, "Receive CRC:" + (int)Crc32Algorithm.Compute(content.GetBuffer(), (int)headerEnd, (int)(content.Length - headerEnd)));
+
+
+                    //this may not be for our sequence
+                    TaskCompletionSource<TAsyncSocket.PendingBufferEntry> taskSource = null;
+                    m_AsyncSocket.PendingBuffers.TryGetValue(seqID, out taskSource);
+                    if (taskSource != null)
+                    {
+                        //LogService.Logger.Log(LogService.LogType.LT_DEBUG, "Notify Seq: " + seqID.ToString());
+                        TAsyncSocket.PendingBufferEntry entry = new TAsyncSocket.PendingBufferEntry();
+                        entry.m_ContentBuffer = content;
+                        taskSource.SetResult(entry);
+                    }
+                    else
+                    {
+                        throw new TTransportException("Unexpected error occurs");
+                    }
+
                 }
-           
             }
 
-
             TaskCompletionSource<TAsyncSocket.PendingBufferEntry> myTaskSource = null;
-            m_AsyncSocket.PendingBuffers.TryRemove(s_CurSequence.Value, out myTaskSource);
+            //LogService.Logger.Log(LogService.LogType.LT_DEBUG, "Removing Seq: " + s_CurSequence.Value);
+            m_AsyncSocket.PendingBuffers.TryGetValue(s_CurSequence.Value, out myTaskSource);
             if(myTaskSource != null)
             {
                 var task = myTaskSource.Task;
-                MemoryStream stream = task.Result.m_ContentBuffer;
-                readBuffer.Value = stream;
+                if (task.Wait(m_AsyncSocket.Timeout))
+                {
+                    MemoryStream stream = task.Result.m_ContentBuffer;
+                    //LogService.Logger.Log(LogService.LogType.LT_DEBUG, "readBuffer set for thread:" + Thread.CurrentThread.ManagedThreadId.ToString());
+                    readBuffer.Value = stream;
+                    m_AsyncSocket.PendingBuffers.TryRemove(s_CurSequence.Value, out myTaskSource);
 
-                //Task<Aysnc> myTaskSource.;
-
+                }
+                else
+                {
+                    throw new TTransportException(TTransportException.ExceptionType.TimedOut, "SeqID:" + s_CurSequence.Value + ":receive timeout");
+                }    
             }
             else
             {
@@ -393,6 +442,7 @@ namespace Thrift.Transport
         {
             TAsyncSocket.FlushAsyncResult result = (TAsyncSocket.FlushAsyncResult)asyncResult;
             s_CurSequence.Value = result.SeqID;
+            //LogService.Logger.Log(LogService.LogType.LT_DEBUG, "SeqID:" + result.SeqID + " added");
             m_AsyncSocket.PendingBuffers.TryAdd(result.SeqID, new TaskCompletionSource<TAsyncSocket.PendingBufferEntry>());
                          
             m_AsyncSocket.EndFlush(asyncResult);
@@ -431,8 +481,8 @@ namespace Thrift.Transport
             {
                 if (disposing)
                 {
-                    if (readBuffer != null)
-                        readBuffer.Dispose();
+                    //if (readBuffer != null)
+                    //    readBuffer.Dispose();
                     if (writeBuffer != null)
                         writeBuffer.Dispose();
                     if (m_AsyncSocket != null)

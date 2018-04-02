@@ -231,18 +231,21 @@ namespace XLN.Game.Common
                         TimeSpan t = (DateTime.UtcNow - new DateTime(1970, 1, 1));
                         long timestamp = (long)t.TotalSeconds;
 
-                        LogService.Logger.Log(LogService.LogType.LT_DEBUG, "heartbeat await start");
-                        long local = await Task.Factory.FromAsync(networkClient.send_heartbeat(null, null, 1000), (asyncResult) =>
+                        //LogService.Logger.Log(LogService.LogType.LT_DEBUG, "heartbeat await start");
+                        long local = await Task.Factory.FromAsync(networkClient.send_heartbeat(null, null, timestamp), (asyncResult) =>
                         {
-                            //asyncResult.
-                            //var task = Task.Factory.StartNew(() => { });
-                            //return 1;
-
-                            return networkClient.End_heartbeat(asyncResult);
-                        
+                            //LogService.Logger.Log(LogService.LogType.LT_DEBUG, "heartbeat end call begin ");
+                            long ret = networkClient.End_heartbeat(asyncResult);
+                            //LogService.Logger.Log(LogService.LogType.LT_DEBUG, "heartbeat end call end ");
+                            return ret;
                         
                         });//networkClient.End_heartbeat);
-                        LogService.Logger.Log(LogService.LogType.LT_DEBUG, "heartbeat await end");
+                        //LogService.Logger.Log(LogService.LogType.LT_DEBUG, "heartbeat await end resul " + local.ToString());
+
+                        //long local = await ClientSend<XLN.Game.Common.Thrift.NetworkService.Client, long>(
+                        //    (client) => { return Task.Factory.FromAsync(client.send_heartbeat(null, null, 1000), client.End_heartbeat); }, null, null, 1000);
+                        //LogService.Logger.Log(LogService.LogType.LT_DEBUG, "heartbeat await end resul " + local.ToString());
+            
                     }
                 }
                 catch(TTransportException ex)
@@ -258,12 +261,12 @@ namespace XLN.Game.Common
                 }
                 catch(Exception ex)
                 {
-                    LogService.Logger.Log(LogService.LogType.LT_WARNING, ex.StackTrace);
-                    throw ex;
+                    LogService.Logger.Log(LogService.LogType.LT_WARNING, ex.ToString());
+                    //throw ex;
                 }
 
                 //send heartbeat every 10 seconds
-                await Task.Delay(10000);
+                await Task.Delay(2000);
             }
 
         }
@@ -286,28 +289,32 @@ namespace XLN.Game.Common
             }
         }
 
-       /*
-        public async Task<R> ClientSend<Client, R>(string processorName, Func<Client, Task<R>> thriftAction, Action<Task> onPostTransport, Action<Task> onSuccess,
+       
+        public Task<R> ClientSend<Client, R>(Func<Client, Task<R>> thriftAction, Action<Task> onSuccess,
             Action<Task> onFail, int timeoutMillis)
         {
-            Task task = null;
-            task = Task.Factory.StartNew(() =>
-            {
-                try
-                {
-                    Client protocol = (Client)Activator.CreateInstance(typeof(Client), m_Transport);
-                    return await thriftAction(protocol);
 
-                    if (onPostTransport != null)
-                        onPostTransport(task);
+            var task = Task.Factory.StartNew(async delegate
+           {
+               try
+               {
+                    TProtocol protocol = new THeaderProtocol((THeaderTransport)m_Transport, THeaderProtocol.PROTOCOL_TYPES.T_BINARY_PROTOCOL);
+                   Client client = XLN.Game.Common.Utils.ClassUtils.CreateInstance<Client>(protocol);
+                    return await thriftAction(client);
+                  
+                                      //Task.FromResult(default(R));
+                                      //if (onPostTransport != null)
+                                      //    onPostTransport(task);
                 }
-                catch (Exception e)
-                {
-                    throw e;
-                }
+               catch (Exception e)
+               {
+                   throw e;
+               }
 
-            }, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Default)
-                .ContinueWith((t) =>
+
+            }, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Default).Unwrap();
+           
+            task .ContinueWith((t) =>
                 {
                     if (t.Exception == null)
                     {
@@ -325,14 +332,56 @@ namespace XLN.Game.Common
 
                 }, ApplicationContext.MainScheduler);
 
-        }
-        */
+            return task;
 
-        //protected object m_NetworkServiceClientLock = new object();
+        }
+
+        public Task ClientSend<Client>(Func<Client, Task> thriftAction, Action<Task> onSuccess,
+            Action<Task> onFail, int timeoutMillis)
+        {
+            Task task = null;
+            task = Task.Factory.StartNew(async () =>
+            {
+                try
+                {
+                    TProtocol protocol = new THeaderProtocol((THeaderTransport)m_Transport, THeaderProtocol.PROTOCOL_TYPES.T_BINARY_PROTOCOL);
+                    Client client = XLN.Game.Common.Utils.ClassUtils.CreateInstance<Client>(protocol);
+                    await thriftAction(client);
+
+                    //if (onPostTransport != null)
+                    //    onPostTransport(task);
+                }
+                catch (Exception e)
+                {
+                    throw e;
+                }
+
+            }, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Default)
+                .ContinueWith((t) =>
+                {
+                    if (t.Exception == null)
+                    {
+                        if (onSuccess != null)
+                            onSuccess(t);
+                    }
+                    else
+                    {
+
+                        if (onFail != null)
+                        {
+                            onFail(t);
+                        }
+                    }
+
+                }, ApplicationContext.MainScheduler);
+
+            return task;
+
+        }
+
+
 
         private TTransport m_Transport;
-        //private CancellationTokenSource m_HeartbeatTaskCancelOperation = new CancellationTokenSource();
-        //private CancellationTokenSource m_HeartbeatStopperCancelOperation = new CancellationTokenSource();
         private Task<ConnectionResult> m_ConnectionTask;
         private Task m_HeartbeatTask;
 

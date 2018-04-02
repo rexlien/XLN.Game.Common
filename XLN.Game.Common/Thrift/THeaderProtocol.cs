@@ -18,10 +18,13 @@ namespace XLN.Game.Common.Thrift
             T_FROZEN2_PROTOCOL = 6,
         };
 
+        THeaderTransport m_HeaderTransport;
+
         public THeaderProtocol(THeaderTransport transport, PROTOCOL_TYPES protocolType = PROTOCOL_TYPES.T_BINARY_PROTOCOL)
             :base(transport)
         {
             transport.ProtocolID = (short)protocolType;
+            m_HeaderTransport = transport;
             ResetProtcol(protocolType);
         }
 
@@ -107,12 +110,14 @@ namespace XLN.Game.Common.Thrift
 
         public override TMessage ReadMessageBegin()
         {
+            m_HeaderTransport.BeginReadMessage();
             return m_Protocol.ReadMessageBegin();
         }
 
         public override void ReadMessageEnd()
         {
             m_Protocol.ReadMessageEnd();
+            m_HeaderTransport.EndReadMessage();
         }
 
         public override TSet ReadSetBegin()
