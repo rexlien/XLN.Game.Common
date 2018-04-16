@@ -58,6 +58,14 @@ namespace XLN.Game.Common
 
         }
 
+        public void OnEvent(int eventID)
+        {
+            foreach (KeyValuePair<Guid, IService> s in m_Services)
+            {
+                s.Value.OnEvent(eventID);
+            }
+        }
+
         public bool PostUpdate(float delta)
         {
             foreach (KeyValuePair<Guid, IService> s in m_Services)

@@ -28,4 +28,10 @@
       <Link>UnityResourceService.cs</Link>
     </Compile>
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Actor\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="BaseBehavior.cs.meta" />
+  </ItemGroup>
 </Project>

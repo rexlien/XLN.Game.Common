@@ -7,30 +7,30 @@ namespace XLN.Game.Unity
     public class BaseBehavior : MonoBehaviour
     {
 
-        /*private Unit m_Unit;
-        public Unit Unit
+        private BaseActor m_Actor;
+        public BaseActor Actor
         {
             get
             {
-                return m_Unit;
+                return m_Actor;
             }
 
             set
             {
                 //TODO: clean old one's handler
-                if (m_Unit != value)
+                if (m_Actor != value)
                 {
-                    m_Unit = value;
-                    m_Unit.OnEnterStateHandler += OnEnterState;
-                    m_Unit.OnUpdateStateHandler += OnUpdateState;
-                    m_Unit.OnLeaveStateHandler += OnLeaveState;
-                    m_Unit.OnHurtHandler += OnHurt;
-                    m_Unit.OnDeathHandler += OnDeath;
+                    m_Actor = value;
+                    m_Actor.OnEnterStateHandler += OnEnterState;
+                    m_Actor.OnUpdateStateHandler += OnUpdateState;
+                    m_Actor.OnLeaveStateHandler += OnLeaveState;
+                    m_Actor.OnHurtHandler += OnHurt;
+                    m_Actor.OnDeathHandler += OnDeath;
                 }
 
             }
         }
-    */
+    
 
         // Use this for initialization
         public virtual void Start()
@@ -70,8 +70,6 @@ namespace XLN.Game.Unity
         {
 
         }
-
-        //public 
 
 
     }

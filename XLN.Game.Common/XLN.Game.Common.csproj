@@ -44,4 +44,9 @@
   <ItemGroup>
     <PackageReference Include="Crc32.NET" Version="1.2.0" />
   </ItemGroup>
+  <ItemGroup>
+    <None Remove="AI\FSM.cs.meta" />
+    <None Remove="AI\FSMState.cs.meta" />
+    <None Remove="BaseActor.cs.meta" />
+  </ItemGroup>
 </Project>

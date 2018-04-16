@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 
 namespace XLN.Game.Common
 {
@@ -19,8 +20,7 @@ namespace XLN.Game.Common
         public event StateUpdateDelegate OnUpdateStateHandler;
 
 
-
-        public virtual void OnCreate()
+        public virtual void OnCreated()
         {
 
         }
@@ -57,12 +57,14 @@ namespace XLN.Game.Common
 
         protected virtual void OnDeath(BaseActor source)
         {
-            if (OnHurtHandler != null)
-                OnHurtHandler(source);
+            if (OnDeathHandler != null)
+                OnDeathHandler(source);
 
         }
 
-        public abstract int GetID();
+        private System.Guid m_ID;
+
+        public Guid ID { get => m_ID; set => m_ID = value; }
     }
 
 }

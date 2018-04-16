@@ -25,5 +25,9 @@ namespace XLN.Game.Common
         {
             return true;
         }
+        public virtual void OnEvent(int eventID)
+        {
+            
+        }
     }
 }

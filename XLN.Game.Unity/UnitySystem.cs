@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
+using XLN.Game.Common;
 
 namespace XLN.Game.Unity
 {
@@ -90,7 +91,7 @@ namespace XLN.Game.Unity
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void OnAfterSceneLoadRuntimeMethod()
         {
-            
+            ServiceMgr.GetServiceMgr().OnEvent(0);
         }
 
     }
