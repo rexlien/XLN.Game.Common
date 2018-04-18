@@ -19,9 +19,23 @@ namespace XLN.Game.Unity.Actor
         public override void OnCreated()
         {
             base.OnCreated();
-            ActorComponent behavior = m_GameObject.AddComponent<ActorComponent>();
-            behavior.Actor = this;
+            ActorComponent behavior = AddComponent<ActorComponent>();
             m_GameObject.name = GetType().ToString() + this.ID.ToString();
+        }
+
+        protected override T _CreateComponent<T>()
+        {
+            
+            if(typeof(T).IsSubclassOf(typeof(BaseBehavior)))
+            {
+                T behavior = (T)(object)m_GameObject.AddComponent(typeof(T));//AddComponent<T>();
+                return behavior;
+            }
+            else
+            {
+                return base._CreateComponent<T>();
+            }
+
         }
 
         protected GameObject m_GameObject = new GameObject();

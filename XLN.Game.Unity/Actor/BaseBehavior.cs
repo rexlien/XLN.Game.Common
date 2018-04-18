@@ -1,10 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
 using XLN.Game.Common;
+using XLN.Game.Common.Actor;
 
 namespace XLN.Game.Unity
 {
-    public class BaseBehavior : MonoBehaviour
+    public class BaseBehavior : MonoBehaviour, IComponent
     {
 
         private BaseActor m_Actor;
@@ -30,7 +31,11 @@ namespace XLN.Game.Unity
 
             }
         }
-    
+
+        private void OnDestroy()
+        {
+            Actor.RemoveComponent(this);
+        }
 
         // Use this for initialization
         public virtual void Start()
@@ -43,6 +48,7 @@ namespace XLN.Game.Unity
         {
 
         }
+
 
 
         public virtual void OnEnterState(State state)
@@ -71,6 +77,9 @@ namespace XLN.Game.Unity
 
         }
 
-
+        public T Sibling<T>() where T : IComponent
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

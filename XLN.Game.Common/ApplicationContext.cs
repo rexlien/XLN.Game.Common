@@ -18,8 +18,10 @@ namespace XLN.Game.Common
 
             Task<AppConfig> appConfig = resService.Get<AppConfig>(new ResourcePath(ResourcePath.PathType.Resource, "XLNConfig.xml"));
             AppConig = appConfig.Result;
+
             if (AppConig != null)
             {
+                LogService.Logger.Log(LogService.LogType.LT_DEBUG, "AppConfig Load Success");
                 ServiceMgr.GetServiceMgr().InjectService(AppConig);
             }
            

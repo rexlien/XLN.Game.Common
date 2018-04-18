@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
+using XLN.Game.Common.Actor;
+using XLN.Game.Common.Utils;
 
 namespace XLN.Game.Common
 {
@@ -62,9 +65,46 @@ namespace XLN.Game.Common
 
         }
 
-        private System.Guid m_ID;
+        public virtual T AddComponent<T>() where T : IComponent
+        {
+            T comp = _CreateComponent<T>();
+            comp.Actor = this;
+                //ClassUtils.CreateInstance<T>();
+            if(m_ActorService != null)
+            {
+                m_Components.Add(typeof(T).GUID, comp);
+                m_ActorService.AddComponent(comp);
+            }
 
+            return comp;
+        }
+
+        public virtual void RemoveComponent(IComponent comp)
+        {
+            m_ActorService.RemoveComponent(this, comp);
+            m_Components.Remove(comp.GetType().GUID);
+        }
+
+        protected virtual T _CreateComponent<T>() where T : IComponent
+        {
+            return ClassUtils.CreateInstance<T>();
+        }
+
+        public T GetComponent<T>() where T : IComponent
+        {
+            IComponent comp = null;
+            m_Components.TryGetValue(typeof(T).GUID, out comp);
+            return (T)comp;
+        }
+
+        private Dictionary<Guid, IComponent> m_Components = new Dictionary<Guid, IComponent>();
+       
+
+        private System.Guid m_ID;
         public Guid ID { get => m_ID; set => m_ID = value; }
+        public ActorService ActorService { get => m_ActorService; set => m_ActorService = value; }
+
+        private ActorService m_ActorService;
     }
 
 }

@@ -41,6 +41,7 @@ namespace XLN.Game.Common
         {
             actor.ID = System.Guid.NewGuid();
             actor.OnCreated();
+            actor.ActorService = this;
             m_Actors.Add(actor.ID, actor); 
         }
 
@@ -64,6 +65,18 @@ namespace XLN.Game.Common
         private void _DestoryActor(BaseActor actor)
         {
             actor.OnDestroy();
+        }
+
+        public void AddComponent(IComponent component)
+        {
+
+
+        }
+
+        public void RemoveComponent(BaseActor actor, IComponent component)
+        {
+
+
         }
 
 
