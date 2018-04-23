@@ -3,7 +3,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using XLN.Game.Common;
+using System.Runtime.InteropServices;
 
+[GuidAttribute("1FB5C7FA-6F22-4A51-AB67-57316134D495")]
 public class GameObjectPoolService : IService
 {
 
@@ -37,7 +39,7 @@ public class GameObjectPoolService : IService
 
     public int NumActive (GameObject prefab)
     {
-        PoolObjectModel poolObject = GetPoolObjectByPrefab(prefab);
+        PoolObjectModel poolObject = GetPoolObject(prefab);
         if(poolObject == null)
             return 0;
         else
@@ -49,7 +51,7 @@ public class GameObjectPoolService : IService
 
     public int NumAvailable (GameObject prefab)
     {
-        PoolObjectModel poolObject = GetPoolObjectByPrefab(prefab);
+        PoolObjectModel poolObject = GetPoolObject(prefab);
         if(poolObject == null)
             return 0;
         else
@@ -67,7 +69,7 @@ public class GameObjectPoolService : IService
 
         if(IsPoolObjectExist(prefab))
         {
-            currentPoolObject = GetPoolObjectByPrefab(prefab);
+            currentPoolObject = GetPoolObject(prefab);
         }
         else
         {
@@ -131,7 +133,7 @@ public class GameObjectPoolService : IService
             Debug.LogError("Destroy null");
             return false;
         }
-        PoolObjectModel currentPoolObject = GetPoolObjectByPrefab(target);
+        PoolObjectModel currentPoolObject = GetPoolObject(target);
         if(IsPoolObjectExist(target))
         {
             if (!currentPoolObject.Available.Contains(target))
@@ -196,15 +198,19 @@ public class GameObjectPoolService : IService
     public bool IsPoolObjectExist(GameObject prefabObject)
     {
 
+        return IsPoolObjectExist(prefabObject.name);
+
+    }
+
+    public bool IsPoolObjectExist(string prefabName)
+    {
+
         bool prefabExists = false;
 
-        string prefabName;
-        if (prefabObject.name.Contains("(Cached)"))
-            prefabName = prefabObject.name;
-        else
-            prefabName = prefabObject.name + "(Cached)";
-        
-        if(m_PoolObjectList.ContainsKey(prefabName))
+        if (!prefabName.Contains("(Cached)"))
+            prefabName = prefabName + "(Cached)";
+
+        if (m_PoolObjectList.ContainsKey(prefabName))
         {
             prefabExists = true;
         }
@@ -212,6 +218,7 @@ public class GameObjectPoolService : IService
         return prefabExists;
 
     }
+
 
      
 
@@ -222,21 +229,21 @@ public class GameObjectPoolService : IService
 
     }
 
-     
-
-    protected PoolObjectModel GetPoolObjectByPrefab(GameObject prefabObject)
+    private PoolObjectModel GetPoolObject(string prefabName)
     {
-
-        string prefabName;
-        if (prefabObject.name.Contains("(Cached)"))
-            prefabName = prefabObject.name;
-        else
-            prefabName = prefabObject.name + "(Cached)";
-
+        if (!prefabName.Contains("(Cached)"))
+            prefabName = prefabName + "(Cached)";
         PoolObjectModel poolObjectToReturn = null;// new PoolObjectModel();
 
         m_PoolObjectList.TryGetValue(prefabName, out poolObjectToReturn);
         return poolObjectToReturn;
+    }
+     
+
+    private PoolObjectModel GetPoolObject(GameObject prefabObject)
+    {
+
+        return GetPoolObject(prefabObject.name);
 
     }
 

@@ -65,14 +65,15 @@ namespace XLN.Game.Common
 
         }
 
-        public virtual T AddComponent<T>() where T : IComponent
+        public virtual T AddComponent<T>(params object[] param) where T : IComponent
         {
-            T comp = _CreateComponent<T>();
+            T comp = _CreateComponent<T>(param);
             comp.Actor = this;
+            comp.Init();
+            m_Components.Add(typeof(T).GUID, comp);
                 //ClassUtils.CreateInstance<T>();
             if(m_ActorService != null)
             {
-                m_Components.Add(typeof(T).GUID, comp);
                 m_ActorService.AddComponent(comp);
             }
 
@@ -83,14 +84,15 @@ namespace XLN.Game.Common
         {
             m_ActorService.RemoveComponent(this, comp);
             m_Components.Remove(comp.GetType().GUID);
+            comp.Destroy();
         }
 
-        protected virtual T _CreateComponent<T>() where T : IComponent
+        protected virtual T _CreateComponent<T>(params object[] param) where T : IComponent
         {
-            return ClassUtils.CreateInstance<T>();
+            return ClassUtils.CreateInstance<T>(param);
         }
 
-        public T GetComponent<T>() where T : IComponent
+        public virtual T GetComponent<T>()// where T : IComponent
         {
             IComponent comp = null;
             m_Components.TryGetValue(typeof(T).GUID, out comp);

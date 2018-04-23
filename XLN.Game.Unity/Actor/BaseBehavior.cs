@@ -33,8 +33,8 @@ namespace XLN.Game.Unity
         }
 
         private void OnDestroy()
-        {
-            Actor.RemoveComponent(this);
+        {   if(Actor != null)
+                Actor.RemoveComponent(this);
         }
 
         // Use this for initialization
@@ -80,6 +80,16 @@ namespace XLN.Game.Unity
         public T Sibling<T>() where T : IComponent
         {
             throw new System.NotImplementedException();
+        }
+
+        public virtual void Init()
+        {
+            
+        }
+
+        public virtual void Destroy()
+        {
+           
         }
     }
 }

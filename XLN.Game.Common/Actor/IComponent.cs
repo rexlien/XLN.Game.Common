@@ -5,17 +5,10 @@ namespace XLN.Game.Common.Actor
     {
         T Sibling<T>() where T : IComponent;
         BaseActor Actor { get; set; }
+
+        void Init();
+        void Destroy();
     }
 
-    public class BaseComponent : IComponent
-    {
-        public T Sibling<T>() where T : IComponent
-        {
-            return m_Actor.GetComponent<T>();
-        }
 
-        private BaseActor m_Actor;
-
-        BaseActor IComponent.Actor { get => m_Actor; set => m_Actor = value; }
-    }
 }

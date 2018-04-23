@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System;
 using XLN.Game.Common;
+using XLN.Game.Common.Actor;
 
 namespace XLN.Game.Unity.Actor
 {
@@ -9,6 +10,18 @@ namespace XLN.Game.Unity.Actor
         public UnityActor()
         {
             
+        }
+
+        public UnityActor(Vector3 initPos, Quaternion? initRot, Vector3? initScale = null)
+        {
+
+            UnityPos = initPos;
+            if(initRot.HasValue)
+                UnityRot = initRot.Value;
+            if(initScale.HasValue)
+            {
+                UnityScale = initScale.Value;
+            }
         }
 
         public override void OnDestroy()
@@ -23,7 +36,7 @@ namespace XLN.Game.Unity.Actor
             m_GameObject.name = GetType().ToString() + this.ID.ToString();
         }
 
-        protected override T _CreateComponent<T>()
+        protected override T _CreateComponent<T>(params object[] param)
         {
             
             if(typeof(T).IsSubclassOf(typeof(BaseBehavior)))
@@ -33,11 +46,61 @@ namespace XLN.Game.Unity.Actor
             }
             else
             {
-                return base._CreateComponent<T>();
+                return base._CreateComponent<T>(param);
             }
 
         }
 
-        protected GameObject m_GameObject = new GameObject();
+        public virtual T AddMonoComponent<T>() where T : Component
+        {
+            
+            return m_GameObject.AddComponent<T>();
+        }
+
+        public override T GetComponent<T>()
+        {
+            if (typeof(IComponent).IsAssignableFrom(typeof(T)))
+            {
+                return base.GetComponent<T>();
+            }
+
+            return m_GameObject.GetComponent<T>();
+
+        }
+
+        //private UnityEngine.Vector3 m_UnityPos;
+        //private UnityEngine.Quaternion m_UnityRot;
+        //private UnityEngine.Vector3 m_UnityScale;
+
+        private GameObject m_GameObject = new GameObject();
+
+        public GameObject GameObject { get => m_GameObject; set => m_GameObject = value; }
+        public Vector3 UnityPos { 
+            get 
+            {
+                return m_GameObject.transform.position;
+            }
+            set
+            {
+                m_GameObject.transform.position = value;
+            }
+        }
+        public Quaternion UnityRot
+        {
+            get
+            {
+                return m_GameObject.transform.rotation;
+            }
+
+            set
+            {
+                m_GameObject.transform.rotation = value;
+            }
+        }
+        public Vector3 UnityScale 
+        {
+            get => m_GameObject.transform.localScale;
+            set => m_GameObject.transform.localScale = value; 
+        }
     }
 }

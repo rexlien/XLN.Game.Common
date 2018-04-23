@@ -27,7 +27,8 @@ namespace Game.Common.Unity
 
         public static void Attach(GameObject parent, GameObject child)
         {
-            child.transform.parent = parent.transform;
+            child.transform.SetParent(parent.transform);
+            //child.transform.parent = parent.transform;
             child.transform.localPosition = Vector3.zero;
             child.transform.localRotation = Quaternion.identity;
         }

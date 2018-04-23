@@ -105,6 +105,10 @@ namespace XLN.Game.Common
                     m_Services.Add(typeof(T).GUID, service);
 
                 }
+                else
+                {
+                    LogService.Logger.Log(LogService.LogType.LT_ERROR, "Service id duplicated");
+                }
             }
             
         }
@@ -120,6 +124,10 @@ namespace XLN.Game.Common
                 {
                     m_Services.Add(guid, service);
 
+                }
+                else
+                {
+                    LogService.Logger.Log(LogService.LogType.LT_ERROR, "Service id duplicated");
                 }
             }
 

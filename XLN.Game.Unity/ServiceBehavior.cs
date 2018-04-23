@@ -11,10 +11,8 @@ namespace XLN.Game.Unity
         void Awake()
         {
             ServiceMgr.GetServiceMgr().RegisterService(new UnityLogService());
+            ServiceMgr.GetServiceMgr().RegisterService(new GameObjectPoolService());
             //LogService service =ServiceMgr.GetServiceMgr().GetService<LogService>();
-
-            UnityResourceService resourceService = new UnityResourceService();
-
             XLN.Game.Common.ApplicationContext.Init(new UnityResourceService(), UnitySystem.UnityScheduler);
         }
 
