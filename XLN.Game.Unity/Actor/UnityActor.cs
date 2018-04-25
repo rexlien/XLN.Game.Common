@@ -26,6 +26,7 @@ namespace XLN.Game.Unity.Actor
 
         public override void OnDestroy()
         {
+            base.OnDestroy();
             UnityEngine.Object.Destroy(m_GameObject);
         }
 

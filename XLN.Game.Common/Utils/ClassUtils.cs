@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Remoting;
@@ -7,6 +8,8 @@ namespace XLN.Game.Common.Utils
 {
     public static class ClassUtils
     {
+
+        private static Dictionary<string, Type> s_TypeCache = new Dictionary<string, Type>();
        
         public static Assembly GetAssemblyByName(string name)
         {
@@ -17,7 +20,7 @@ namespace XLN.Game.Common.Utils
         public static Type GetType<T>()
         {
             var subclasses =
-                   from assembly in AppDomain.CurrentDomain.GetAssemblies()
+                from assembly in AppDomain.CurrentDomain.GetAssemblies().Where(a=>!a.GlobalAssemblyCache)
                    from type in assembly.GetTypes()
                    where (type == typeof(T))
                    select type;
@@ -45,7 +48,7 @@ namespace XLN.Game.Common.Utils
 
         public static T CreateInstance<T>(params object[] args)
         {
-            Type t = GetType<T>();
+            Type t = typeof(T);
             if(t != null)
             {
                 return (T)Activator.CreateInstance(t, args);

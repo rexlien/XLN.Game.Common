@@ -33,7 +33,8 @@ namespace XLN.Game.Unity
         }
 
         private void OnDestroy()
-        {   if(Actor != null)
+        {   
+            if(Actor != null)
                 Actor.RemoveComponent(this);
         }
 

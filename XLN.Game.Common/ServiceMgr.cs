@@ -75,20 +75,33 @@ namespace XLN.Game.Common
             return true;
         }
 
+        private static Assembly[] s_Assembly = AppDomain.CurrentDomain.GetAssemblies();
+        private Dictionary<Type, IService> m_SubClassCache = new Dictionary<Type, IService>();
+
         private T GetSubClassService<T>() where T : IService
         {
-            var subclasses =
-                   from assembly in AppDomain.CurrentDomain.GetAssemblies()
-                   from type in assembly.GetTypes()
-                   where type.IsSubclassOf(typeof(T))
-                   select type;
-
+            IEnumerable<Type> subClases = null;
             IService retService = null;
-            foreach (Type t in subclasses)
+            m_SubClassCache.TryGetValue(typeof(T), out retService);
+            if (retService == null)
             {
-               
+                subClases =
+                    from assembly in s_Assembly.Where(a => !a.GlobalAssemblyCache)
+                from type in assembly.GetTypes()
+                where type.IsSubclassOf(typeof(T))
+                select type;
+            }
+            else
+            {
+                return retService as T;
+            }
+
+            foreach (Type t in subClases)
+            {
                 if (m_Services.TryGetValue(t.GUID, out retService))
+                {   m_SubClassCache.Add(typeof(T), retService);
                     return retService as T;
+                }
             }
 
             return null;

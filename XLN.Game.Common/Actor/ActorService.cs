@@ -27,6 +27,12 @@ namespace XLN.Game.Common
             
         }
 
+        public override bool OnInit()
+        {
+            
+            return base.OnInit();
+        }
+
         public override bool OnUpdate(float delta)
         {
             foreach(var pair in m_Systems )
@@ -37,19 +43,7 @@ namespace XLN.Game.Common
             return base.OnUpdate(delta);
         }
 
-        public BaseActor CreateActor(ActorFactory factory)
-        {
-            BaseActor actor = factory.CreateActor();
-            _AddActor(actor);
-            return actor;
-        }
 
-        /*
-        public void AddActor(BaseActor actor)
-        {
-            _AddActor(actor);
-        }
-*/
         public T AddActor<T>(params object[] param) where T : BaseActor
         {
             T actor = ClassUtils.CreateInstance<T>(param);
@@ -144,6 +138,7 @@ namespace XLN.Game.Common
             }
 
         }
+
 
 
         protected Dictionary<System.Guid, BaseActor> m_Actors = new Dictionary<System.Guid, BaseActor>();

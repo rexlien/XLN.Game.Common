@@ -95,7 +95,6 @@ namespace XLN.Game.Common
             comp.Actor = this;
             comp.Init();
             m_Components.Add(typeof(T).GUID, comp);
-                //ClassUtils.CreateInstance<T>();
             if(m_ActorService != null)
             {
                 m_ActorService.AddComponent(comp);
