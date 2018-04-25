@@ -30,10 +30,12 @@ namespace XLN.Game.Unity
             ICacheable cacheable = null;
             if (m_Resources.TryGetValue(path.Path, out cacheable))
             {
+                
                 return (IResource)(cacheable);
             }
             else
             {
+                LogService.Logger.Log(LogService.LogType.LT_DEBUG, "ResService Cache Missed");
                 IResourceCreator creator = GetCreator(path.GetExt());
                 IResource newRes = null;
                 if (creator == null)
@@ -58,11 +60,13 @@ namespace XLN.Game.Unity
         {
             ICacheable cacheable = null;
             if (m_Resources.TryGetValue(path.Path, out cacheable))
-            {
+            {   
+                
                 return (IResource)(cacheable);
             }
             else
             {
+                LogService.Logger.Log(LogService.LogType.LT_DEBUG, "ResService Cache Missed");
                 IResource newRes = null;
                 IResourceCreator creator = GetCreator(path.GetExt());
 
@@ -85,7 +89,7 @@ namespace XLN.Game.Unity
 
         public override Task<T> Get<T>(ResourcePath path)
         {
-            Debug.Log("Get Resource Path: " + path.Path);
+            //Debug.Log("Get Resource Path: " + path.Path);
             //Unity resource can't async
             if (path.Type != ResourcePath.PathType.Resource)
             {
@@ -119,7 +123,7 @@ namespace XLN.Game.Unity
         public override async Task<T> GetAsync<T>(ResourcePath path)
         {
            
-            Debug.Log("Get Resource Path: " + path.Path);
+            //Debug.Log("Get Resource Path: " + path.Path);
             IResource res = await GetResourceAsync(path);
             if(res != null)
             {

@@ -7,7 +7,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>full</DebugType>
     <OutputPath>..\..\Assets\XLN.Game.Common</OutputPath>
-    <DefineConstants>TRACE;SILVERLIGHT;DEBUG;NET45</DefineConstants>
+    <DefineConstants>TRACE;SILVERLIGHT;NET45;DEBUG;NET46</DefineConstants>
     <CustomCommands>
       <CustomCommands>
         <Command>
@@ -26,7 +26,25 @@
     </CustomCommands>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType></DebugType>
     <OutputPath>..\..\Assets\XLN.Game.Common</OutputPath>
+    <DefineConstants>TRACE;RELEASE;NET46;SILVERLIGHT;</DefineConstants>
+    <CustomCommands>
+      <CustomCommands>
+        <Command>
+          <type>BeforeBuild</type>
+          <command>../bin/mac/thrift -r --gen csharp ../XLNProtocol/thrift/ActorService.thrift</command>
+        </Command>
+        <Command>
+          <type>Clean</type>
+          <command>rm -rf gen-csharp</command>
+        </Command>
+        <Command>
+          <type>BeforeBuild</type>
+          <command>../bin/mac/thrift -r --gen csharp ../XLNProtocol/thrift/NetworkService.thrift</command>
+        </Command>
+      </CustomCommands>
+    </CustomCommands>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="gen-csharp\TestMessage.cs" />

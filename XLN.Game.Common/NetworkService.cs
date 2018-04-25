@@ -266,7 +266,7 @@ namespace XLN.Game.Common
                 }
 
                 //send heartbeat every 10 seconds
-                await Task.Delay(2000);
+                await Task.Delay(5000);
             }
 
         }

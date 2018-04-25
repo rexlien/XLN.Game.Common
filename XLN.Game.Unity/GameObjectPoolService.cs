@@ -59,12 +59,17 @@ public class GameObjectPoolService : IService
 
     }
 
-     
+    public class AquireResult
+    {
+        public GameObject GameObject;
+        public bool Pooled;
+    }
 
-    public GameObject Spawn(GameObject prefab, Vector3 position, Quaternion rotation)
+    public AquireResult Acquire(GameObject prefab, Vector3 position, Quaternion rotation)
     {
 
-        GameObject result;
+        AquireResult result = new AquireResult();
+        GameObject go;
         PoolObjectModel currentPoolObject = new PoolObjectModel();
 
         if(IsPoolObjectExist(prefab))
@@ -79,44 +84,44 @@ public class GameObjectPoolService : IService
 
         if (currentPoolObject.Available.Count == 0)
         {
-
-            //Debug.Log("Spawn Instantiate new object" + currentPoolObject.Prefab.name);
-            result = GameObject.Instantiate(prefab, position, rotation) as GameObject;
-            result.name = currentPoolObject.PrefabName;
-            GameObject.DontDestroyOnLoad(result);
-            //Debug.Log("Spawn Instantiate new object" + result.name);
+            LogService.Logger.Log(LogService.LogType.LT_DEBUG, "GameObjPool Cache Missed");
+            go = GameObject.Instantiate(prefab, position, rotation) as GameObject;
+            go.name = currentPoolObject.PrefabName;
+            GameObject.DontDestroyOnLoad(go);
             currentPoolObject.All.Add(result);
+            result.Pooled = false;
         }
         else
         {
-            //Debug.LogError("Pool Has Bug!" + currentPoolObject.Available.ToString() + currentPoolObject.PrefabName);
-            //Debug.Log("Reuse Old object" + currentPoolObject.PrefabName);
-            result = currentPoolObject.Available.Pop() as GameObject;
+            
+            go = currentPoolObject.Available.Pop() as GameObject;
             // get the result’s transform and reuse for efficiency.
             // calling gameObject.transform is expensive.
 
-            if(result == null)
+            if(go == null)
             {
                 Debug.LogError("Pool Has Bug!" + currentPoolObject.PrefabName);
                 //result = GameObject.Instantiate(prefab, position, rotation) as GameObject;
                 //result.name = currentPoolObject.Prefab.name;
             }
 
-            Transform resultTrans = result.transform;
+            Transform resultTrans = go.transform;
             resultTrans.position = position;
             resultTrans.rotation = rotation;
 
-            SetActive(result, true);
-            //Debug.Log(“Is Active: ” + result.active);
+            SetActive(go, true);
+            result.Pooled = true;
+
 
         }
+        result.GameObject = go;
         return result;
 
     }
 
-    public GameObject Spawn(GameObject prefab)
+    public AquireResult Acquire(GameObject prefab)
     {
-        return Spawn(prefab, Vector3.zero, Quaternion.identity);
+        return Acquire(prefab, Vector3.zero, Quaternion.identity);
     }
 
     public override bool OnDestroy()
@@ -126,13 +131,16 @@ public class GameObjectPoolService : IService
     }
      
 
-    public bool Destroy(GameObject target)
+    public bool Return(GameObject target)
     {
         if (target == null)
         {
             Debug.LogError("Destroy null");
             return false;
         }
+
+        target.transform.parent = null;
+
         PoolObjectModel currentPoolObject = GetPoolObject(target);
         if(IsPoolObjectExist(target))
         {

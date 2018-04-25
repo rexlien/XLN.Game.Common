@@ -13,13 +13,6 @@ namespace XLN.Game.Unity.Actor
             m_ActorService = ServiceMgr.GetServiceMgr().GetService<ActorService>();
         }
 
-        private void OnDestroy()
-        {
-            //Actor.OnDestroy();
-            //if(m_ActorService)
-
-        }
-
         private ActorService m_ActorService;
     }
 }

@@ -23,14 +23,22 @@ namespace XLN.Game.Common
         public event StateUpdateDelegate OnUpdateStateHandler;
 
 
+        public Action<BaseActor> OnEnterIntercept;
+        public Action<BaseActor> OnLeaveIntercept;
+
         public virtual void OnCreated()
         {
-
+            
         }
 
         public virtual void OnDestroy()
         {
-
+            foreach(var kv in m_Components)
+            {
+                m_ActorService.RemoveComponent(this, kv.Value);
+                kv.Value.Destroy();
+            }
+            m_Components.Clear();
         }
 
         public virtual void EnterState(State state)
@@ -63,6 +71,22 @@ namespace XLN.Game.Common
             if (OnDeathHandler != null)
                 OnDeathHandler(source);
 
+        }
+
+        public virtual void EnterIntercept(BaseActor source)
+        {
+            if(OnEnterIntercept != null)
+            {
+                OnEnterIntercept(source);
+            }
+        }
+
+        public virtual void LeaveIntercept(BaseActor source)
+        {
+            if (OnLeaveIntercept != null)
+            {
+                OnLeaveIntercept(source);
+            }
         }
 
         public virtual T AddComponent<T>(params object[] param) where T : IComponent
