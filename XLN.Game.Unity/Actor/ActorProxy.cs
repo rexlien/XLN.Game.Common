@@ -11,10 +11,9 @@ namespace XLN.Game.Unity.Actor
             
         }
 
-        public override void Start()
+        void Start()
         {
-            base.Start();
-
+           
             //Actor proxy gameobject must have parent
             m_RootGameObject = gameObject.transform.root.gameObject;
             Actor = m_RootGameObject.GetComponent<ActorComponent>().Actor;

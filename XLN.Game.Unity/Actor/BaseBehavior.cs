@@ -38,18 +38,6 @@ namespace XLN.Game.Unity
                 Actor.RemoveComponent(this);
         }
 
-        // Use this for initialization
-        public virtual void Start()
-        {
-
-        }
-
-        // Update is called once per frame
-        public virtual void Update()
-        {
-
-        }
-
 
 
         public virtual void OnEnterState(State state)

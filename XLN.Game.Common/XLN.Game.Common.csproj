@@ -55,6 +55,7 @@
     <Folder Include="Thrift\" />
     <Folder Include="Utils\" />
     <Folder Include="Extension\" />
+    <Folder Include="DataModel\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\thrift\lib\csharp\src\Thrift.45.csproj" />
@@ -66,5 +67,10 @@
     <None Remove="AI\FSM.cs.meta" />
     <None Remove="AI\FSMState.cs.meta" />
     <None Remove="BaseActor.cs.meta" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>libs\Newtonsoft.Json.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>

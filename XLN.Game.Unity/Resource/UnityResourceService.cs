@@ -21,6 +21,7 @@ namespace XLN.Game.Unity
         public UnityResourceService()
         {
             RegisterResourceCreator(".xml", new ResourceService.ResoruceCreator<UnityXMLResource>());
+            RegisterResourceCreator(".json", new ResourceService.ResoruceCreator<UnityJsonResource>());
             RegisterResourceCreator(".unitybundle", new ResourceService.ResoruceCreator<UnityAssetBundle>());
         }
 
