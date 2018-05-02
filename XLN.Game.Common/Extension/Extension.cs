@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
@@ -11,6 +12,22 @@ namespace XLN.Game.Common.Extension
 {
     public static class Extension
     {
+
+
+         public static TValue GetAttributeValue<TAttribute, TValue>( this Type type,
+            Func<TAttribute, TValue> valueSelector)
+            where TAttribute : Attribute
+        {
+            var att = type.GetCustomAttributes(
+                typeof(TAttribute), true
+            ).FirstOrDefault() as TAttribute;
+            if (att != null)
+            {
+                return valueSelector(att);
+            }
+            return default(TValue);
+        }
+
 
         public static UInt16 ntoh16(this BinaryReader reader)
         {

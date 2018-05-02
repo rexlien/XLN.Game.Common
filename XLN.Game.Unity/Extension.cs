@@ -10,6 +10,45 @@ namespace XLN.Game.Unity.Extension
     public static class Extension
     {
 
+        public static UnityEngine.Vector3 ToUnityVec3(this System.Numerics.Vector3 vec3)
+        {
+            return new UnityEngine.Vector3(vec3.X, vec3.Y, vec3.Z);
+        }
+
+        public static void ToUnityVec3(this System.Numerics.Vector3 vec3, UnityEngine.Vector3 unityVec)
+        {
+            unityVec.x = vec3.X;
+            unityVec.y = vec3.Y;
+            unityVec.z = vec3.Z;
+             //new UnityEngine.Vector3(vec3.X, vec3.Y, vec3.Z);
+        }
+
+        public static UnityEngine.Vector2 ToUnityVec2(this System.Numerics.Vector2 vec2)
+        {
+            return new UnityEngine.Vector2(vec2.X, vec2.Y);
+        }
+
+        public static System.Numerics.Vector2 ToSystemVec2(this UnityEngine.Vector2 vec2)
+        {
+            return new System.Numerics.Vector2(vec2.x, vec2.y);
+        }
+
+        public static System.Numerics.Vector3 ToSystemVec3(this UnityEngine.Vector3 vec3)
+        {
+            return new System.Numerics.Vector3(vec3.x, vec3.y, vec3.z);
+        }
+
+        public static System.Numerics.Quaternion ToSystemQuatenion(this UnityEngine.Quaternion quaternion)
+        {
+            return new System.Numerics.Quaternion(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
+        }
+
+        public static UnityEngine.Quaternion ToUnityQuatenion(this System.Numerics.Quaternion quaternion)
+        {
+            return new UnityEngine.Quaternion(quaternion.X, quaternion.Y, quaternion.Z, quaternion.W);
+        }
+
+
         public static string ResolveRealPath(this ResourcePath path)
         {
             if(path.Type == ResourcePath.PathType.Resource)

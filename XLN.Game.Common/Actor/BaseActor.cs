@@ -103,6 +103,20 @@ namespace XLN.Game.Common
             return comp;
         }
 
+        public virtual IComponent AddComponent(string componentType, params object[] param)
+        {
+            IComponent comp = _CreateComponent(componentType, param);
+            comp.Actor = this;
+            comp.Init();
+            m_Components.Add(comp.GetType().GUID, comp);
+            if (m_ActorService != null)
+            {
+                m_ActorService.AddComponent(comp);
+            }
+
+            return comp;
+        }
+
         public virtual void RemoveComponent(IComponent comp)
         {
             m_ActorService.RemoveComponent(this, comp);
@@ -113,6 +127,11 @@ namespace XLN.Game.Common
         protected virtual T _CreateComponent<T>(params object[] param) where T : IComponent
         {
             return ClassUtils.CreateInstance<T>(param);
+        }
+
+        protected virtual IComponent _CreateComponent(string componentType, params object[] param)
+        {
+            return ClassUtils.CreateInstance<IComponent>(componentType, param);
         }
 
         public virtual T GetComponent<T>()// where T : IComponent

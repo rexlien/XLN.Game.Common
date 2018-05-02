@@ -48,6 +48,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="gen-csharp\TestMessage.cs" />
+    <Compile Remove="Actor\ActorSystem.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Config\" />
@@ -56,6 +57,8 @@
     <Folder Include="Utils\" />
     <Folder Include="Extension\" />
     <Folder Include="DataModel\" />
+    <Folder Include="ComponentSystem\" />
+    <Folder Include="Attribute\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\thrift\lib\csharp\src\Thrift.45.csproj" />
@@ -72,5 +75,7 @@
     <Reference Include="Newtonsoft.Json">
       <HintPath>libs\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
 </Project>

@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Runtime.Remoting;
 using System.Text;
 using XLN.Game.Common.Config;
+using XLN.Game.Common.Utils;
 
 namespace XLN.Game.Common
 {
@@ -76,13 +77,13 @@ namespace XLN.Game.Common
         }
 
         private static Assembly[] s_Assembly = AppDomain.CurrentDomain.GetAssemblies();
-        private Dictionary<Type, IService> m_SubClassCache = new Dictionary<Type, IService>();
+        private Dictionary<Type, IService> m_SubServiceCache = new Dictionary<Type, IService>();
 
         private T GetSubClassService<T>() where T : IService
         {
             IEnumerable<Type> subClases = null;
             IService retService = null;
-            m_SubClassCache.TryGetValue(typeof(T), out retService);
+            m_SubServiceCache.TryGetValue(typeof(T), out retService);
             if (retService == null)
             {
                 subClases =
@@ -99,7 +100,7 @@ namespace XLN.Game.Common
             foreach (Type t in subClases)
             {
                 if (m_Services.TryGetValue(t.GUID, out retService))
-                {   m_SubClassCache.Add(typeof(T), retService);
+                {   m_SubServiceCache.Add(typeof(T), retService);
                     return retService as T;
                 }
             }
@@ -147,11 +148,11 @@ namespace XLN.Game.Common
         }
 
 
-        static Assembly GetAssemblyByName(string name)
-        {
-            return AppDomain.CurrentDomain.GetAssemblies().
-                   SingleOrDefault(assembly => assembly.GetName().Name == name);
-        }
+        //static Assembly GetAssemblyByName(string name)
+        //{
+        //    return AppDomain.CurrentDomain.GetAssemblies().
+        //           SingleOrDefault(assembly => assembly.GetName().Name == name);
+        //}
 
         public void RegisterService(string assemblyName, string classname)
         {
@@ -159,7 +160,7 @@ namespace XLN.Game.Common
             Type t = Type.GetType(classname);
             if (t == null)
             { 
-                Assembly assembly = GetAssemblyByName(assemblyName);
+                Assembly assembly = ClassUtils.GetAssemblyByName(assemblyName);
                 t = assembly.GetType(classname);
             }
             ObjectHandle objHandle = Activator.CreateInstance(assemblyName, classname);

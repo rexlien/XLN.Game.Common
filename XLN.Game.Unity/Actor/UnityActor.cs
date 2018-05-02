@@ -2,6 +2,8 @@
 using System;
 using XLN.Game.Common;
 using XLN.Game.Common.Actor;
+using XLN.Game.Unity.Extension;
+using XLN.Game.Common.Utils;
 
 namespace XLN.Game.Unity.Actor
 {
@@ -9,9 +11,9 @@ namespace XLN.Game.Unity.Actor
     {
         public UnityActor()
         {
-            
+            m_TransformComponent = AddComponent<TransformComponent>();
         }
-
+        /*
         public UnityActor(Vector3 initPos, Quaternion? initRot, Vector3? initScale = null)
         {
 
@@ -23,17 +25,31 @@ namespace XLN.Game.Unity.Actor
                 UnityScale = initScale.Value;
             }
         }
-
+*/
         public override void OnDestroy()
         {
             base.OnDestroy();
             UnityEngine.Object.Destroy(m_GameObject);
         }
 
+        /*
+        public void SyncUnityPos()
+        {
+            if(m_TransformComponent != null)
+            {
+                m_TransformComponent.Position.ToUnityVec3(UnityPos);
+                UnityRot = m_TransformComponent.Rotation.ToUnityQuatenion();
+                UnityScale = m_TransformComponent.Scale.ToUnityVec3();
+            }
+        }
+*/
+
         public override void OnCreated()
         {
             base.OnCreated();
             ActorComponent behavior = AddComponent<ActorComponent>();
+            //SyncUnityPos();
+
             m_GameObject.name = GetType().ToString() + this.ID.ToString();
         }
 
@@ -50,6 +66,18 @@ namespace XLN.Game.Unity.Actor
                 return base._CreateComponent<T>(param);
             }
 
+        }
+
+        protected override IComponent _CreateComponent(string componentType, params object[] param)
+        {
+            Type t = ClassUtils.GetType(componentType);
+            if(t.IsSubclassOf(typeof(BaseBehavior)))
+            {
+                IComponent behavior = (IComponent)m_GameObject.AddComponent(t);
+                return behavior; 
+            }
+                      
+            return ClassUtils.CreateInstance<IComponent>(componentType, param);
         }
 
         public virtual T AddMonoComponent<T>() where T : Component
@@ -103,5 +131,8 @@ namespace XLN.Game.Unity.Actor
             get => m_GameObject.transform.localScale;
             set => m_GameObject.transform.localScale = value; 
         }
+
+
+        TransformComponent m_TransformComponent;
     }
 }
