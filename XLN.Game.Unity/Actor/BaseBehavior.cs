@@ -22,6 +22,8 @@ namespace XLN.Game.Unity
                 if (m_Actor != value)
                 {
                     m_Actor = value;
+                    if (m_Actor == null)
+                        return;
                     m_Actor.OnEnterStateHandler += OnEnterState;
                     m_Actor.OnUpdateStateHandler += OnUpdateState;
                     m_Actor.OnLeaveStateHandler += OnLeaveState;

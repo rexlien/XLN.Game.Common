@@ -11,17 +11,33 @@ namespace XLN.Game.Unity.Actor
             
         }
 
-        void Start()
-        {
-           
-            //Actor proxy gameobject must have parent
-            m_RootGameObject = gameObject.transform.root.gameObject;
-            Actor = m_RootGameObject.GetComponent<ActorComponent>().Actor;
+		private void OnTransformParentChanged()
+		{
+            /*
+            if (gameObject.transform.root != null)
+            {
+                m_RootGameObject = gameObject.transform.root.gameObject;
+                var actorComp = m_RootGameObject.GetComponent<ActorComponent>();
+                if (actorComp != null)
+                {
+                    Actor = m_RootGameObject.GetComponent<ActorComponent>().Actor;
+                    return;
+                }
+            }
 
-        }
+            m_RootGameObject = null;
+            Actor = null;
+            */
+		}
 
+		
 
-        private void OnTriggerEnter(UnityEngine.Collider other)
+		private void OnDisable()
+		{
+            //Actor = null;
+		}
+
+		private void OnTriggerEnter(UnityEngine.Collider other)
         {
             BaseActor collidee = null;
             ActorProxy proxy = other.gameObject.GetComponent<ActorProxy>();
@@ -94,6 +110,6 @@ namespace XLN.Game.Unity.Actor
                 Actor.LeaveIntercept(collidee);
         }
 
-        private GameObject m_RootGameObject;
+        //private GameObject m_RootGameObject;
     }
 }

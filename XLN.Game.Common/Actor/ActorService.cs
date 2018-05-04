@@ -61,7 +61,7 @@ namespace XLN.Game.Common
 
         private void _AddActor(BaseActor actor)
         {
-            actor.ID = System.Guid.NewGuid();
+            //actor.ID = System.Guid.NewGuid();
             actor.ActorService = this;
             actor.OnCreated();
             m_Actors.Add(actor.ID, actor); 

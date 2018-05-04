@@ -26,6 +26,12 @@ namespace XLN.Game.Common
         public Action<BaseActor> OnEnterIntercept;
         public Action<BaseActor> OnLeaveIntercept;
 
+
+        public BaseActor()
+        {
+            m_ID = System.Guid.NewGuid();
+        }
+
         public virtual void OnCreated()
         {
             

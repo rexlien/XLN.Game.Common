@@ -65,7 +65,7 @@ public class GameObjectPoolService : IService
         public bool Pooled;
     }
 
-    public AquireResult Acquire(GameObject prefab, Vector3 position, Quaternion rotation)
+    public AquireResult Acquire(GameObject prefab, Vector3 position, Quaternion rotation, bool setActive = true)
     {
 
         AquireResult result = new AquireResult();
@@ -109,7 +109,8 @@ public class GameObjectPoolService : IService
             resultTrans.position = position;
             resultTrans.rotation = rotation;
 
-            SetActive(go, true);
+            if(setActive)
+                SetActive(go, true);
             result.Pooled = true;
 
 
@@ -119,9 +120,9 @@ public class GameObjectPoolService : IService
 
     }
 
-    public AquireResult Acquire(GameObject prefab)
+    public AquireResult Acquire(GameObject prefab, bool setActive = true)
     {
-        return Acquire(prefab, Vector3.zero, Quaternion.identity);
+        return Acquire(prefab, Vector3.zero, Quaternion.identity, setActive);
     }
 
     public override bool OnDestroy()

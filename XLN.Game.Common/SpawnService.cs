@@ -30,13 +30,14 @@ namespace XLN.Game.Common
 
             public string Slot;
 
-            public BaseActor AttachedSpawner;
+            public BaseActor Owner;
+            public bool AttachedOwner;
 
             public Vector3? InitPos;
             public Quaternion? InitRot;
             public Vector3? InitScale;
 
-            public Dictionary<string, object> OptionalParams;
+            //public Dictionary<string, object> OptionalParams;
 
         }
 
@@ -57,6 +58,8 @@ namespace XLN.Game.Common
             //TransformComponent transform = actor.AddComponent<TransformComponent>(spawnParam.InitPos.HasValue ? spawnParam.InitPos.Value : Vector3.Zero, 
             //                                                                      spawnParam.InitRot.HasValue ? spawnParam.InitRot.Value : Quaternion.Identity, spawnParam.InitScale.HasValue ? spawnParam.InitScale.Value : Vector3.One);
             actor.AddComponent(spawnParam.AttributeComponent, spawnParam.AttributeKey);
+            TriggerComponent trigger = actor.AddComponent<TriggerComponent>();
+            trigger.Owner = spawnParam.Owner;
 
             MovementSystem movementSysten = m_ActorService.GetComponentSystem<MovementSystem>();
             movementSysten.Transform(actor, spawnParam.InitPos, spawnParam.InitRot, spawnParam.InitScale);

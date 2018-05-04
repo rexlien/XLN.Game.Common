@@ -69,6 +69,7 @@ namespace XLN.Game.Unity.Actor
             {
 
                 m_GOPoolService.Return(m_RenderObject);
+                m_RenderObject.GetComponent<ActorProxy>().Actor = null;
             }
         }
 
@@ -90,18 +91,25 @@ namespace XLN.Game.Unity.Actor
             {
                 return;
             }
-            GameObjectPoolService.AquireResult res = m_GOPoolService.Acquire(m_Prototype);
+            GameObjectPoolService.AquireResult res = m_GOPoolService.Acquire(m_Prototype, false);
 
             m_RenderObject = res.GameObject;
             m_RenderObject.transform.localScale = m_Scale;
 
+            ActorProxy proxy = null;
             if (!res.Pooled)
-                m_RenderObject.AddComponent<ActorProxy>();
+            {
+                proxy = m_RenderObject.AddComponent<ActorProxy>();
+            }
+            else
+            {
+                proxy = m_RenderObject.GetComponent<ActorProxy>();
+            }
+            proxy.Actor = Actor;
 
             UnityActor unityActor = (UnityActor)(Actor);
             Utils.Attach(unityActor.GameObject, m_RenderObject);
-
-
+            m_RenderObject.SetActive(true);
         }
 
 

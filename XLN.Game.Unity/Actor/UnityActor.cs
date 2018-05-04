@@ -10,47 +10,39 @@ namespace XLN.Game.Unity.Actor
     public class UnityActor : BaseActor
     {
         public UnityActor()
+            :base()
         {
+            m_GameObject = new GameObject();
+            m_TransformComponent = AddComponent<TransformComponent>();
+            m_GameObject.name = GetType().ToString() + this.ID.ToString();
+        }
+
+        public UnityActor(GameObject gameObject)
+            :base()
+        {
+            m_GameObject = gameObject;
+            BaseBehavior[] baseBehaviors = m_GameObject.GetComponents<BaseBehavior>();
+            foreach(BaseBehavior behavior in baseBehaviors)
+            {
+                behavior.Actor = this;
+            }
             m_TransformComponent = AddComponent<TransformComponent>();
         }
-        /*
-        public UnityActor(Vector3 initPos, Quaternion? initRot, Vector3? initScale = null)
-        {
 
-            UnityPos = initPos;
-            if(initRot.HasValue)
-                UnityRot = initRot.Value;
-            if(initScale.HasValue)
-            {
-                UnityScale = initScale.Value;
-            }
-        }
-*/
+       
         public override void OnDestroy()
         {
             base.OnDestroy();
             UnityEngine.Object.Destroy(m_GameObject);
         }
 
-        /*
-        public void SyncUnityPos()
-        {
-            if(m_TransformComponent != null)
-            {
-                m_TransformComponent.Position.ToUnityVec3(UnityPos);
-                UnityRot = m_TransformComponent.Rotation.ToUnityQuatenion();
-                UnityScale = m_TransformComponent.Scale.ToUnityVec3();
-            }
-        }
-*/
 
         public override void OnCreated()
         {
             base.OnCreated();
             ActorComponent behavior = AddComponent<ActorComponent>();
-            //SyncUnityPos();
+          
 
-            m_GameObject.name = GetType().ToString() + this.ID.ToString();
         }
 
         protected override T _CreateComponent<T>(params object[] param)
@@ -101,7 +93,7 @@ namespace XLN.Game.Unity.Actor
         //private UnityEngine.Quaternion m_UnityRot;
         //private UnityEngine.Vector3 m_UnityScale;
 
-        private GameObject m_GameObject = new GameObject();
+        protected GameObject m_GameObject;// = new GameObject();
 
         public GameObject GameObject { get => m_GameObject; set => m_GameObject = value; }
         public Vector3 UnityPos { 
