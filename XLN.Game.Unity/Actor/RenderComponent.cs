@@ -69,7 +69,7 @@ namespace XLN.Game.Unity.Actor
             {
 
                 m_GOPoolService.Return(m_RenderObject);
-                m_RenderObject.GetComponent<ActorProxy>().Actor = null;
+                //m_RenderObject.GetComponent<ActorProxy>().Actor = null;
             }
         }
 
