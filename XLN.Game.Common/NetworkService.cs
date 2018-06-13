@@ -59,19 +59,32 @@ namespace XLN.Game.Common
             return base.OnInit();
         }
 
-        public virtual Task<ConnectionResult> StartConnect()
+        public virtual async Task<ConnectionResult> StartConnect()
         {
+            
             if(m_ServerConfig == null)
             {
-                return Task.FromResult(new ConnectionResult(false, new NetworkServieException("Server config not set")));
+                return new ConnectionResult(false, new NetworkServieException("Server config not set"));
             }
 
-            if(m_ConnectionTask != null && !m_ConnectionTask.IsCompleted)
+            //if(m_ConnectionTask != null && !m_ConnectionTask.IsCompleted)
+            //{
+            //    LogService.Logger.Log(LogService.LogType.LT_WARNING, "connection task not complete yet");
+            //    return new ConnectionResult(false, new NetworkServieException("connection task not complete yet"));    
+            //}
+            //
+            TAsyncSocket socket = new TAsyncSocket(m_ServerConfig.IP, m_ServerConfig.Port);
+            socket.Timeout = 10000;
+            THeaderTransport transport = new THeaderTransport(socket);
+            try
             {
-                LogService.Logger.Log(LogService.LogType.LT_WARNING, "connection task not complete yet");
-                return Task.FromResult(new ConnectionResult(false, new NetworkServieException("connection task not complete yet")));    
+                await transport.OpenAsync();
+            }catch(TTransportException t)
+            {
+                m_ConnectionErrorAction(t);
+                return new ConnectionResult(false, t);
             }
-
+            /*
             var task = Task.Factory.StartNew(() =>
             {
                 TAsyncSocket socket = new TAsyncSocket(m_ServerConfig.IP, m_ServerConfig.Port);
@@ -108,7 +121,8 @@ namespace XLN.Game.Common
                 }
                 return transport;
             });
-
+*/
+            /*
             m_ConnectionTask = task.ContinueWith((t)=>{
                 
                 if (t.IsCompleted)
@@ -141,8 +155,16 @@ namespace XLN.Game.Common
 
             
             }, ApplicationContext.MainScheduler);
+            */
+                      
+            m_Transport = transport;
+            TProtocol protocol = new THeaderProtocol((THeaderTransport)m_Transport, THeaderProtocol.PROTOCOL_TYPES.T_BINARY_PROTOCOL);
+            m_NetworkServiceClient = new Thrift.NetworkService.Client(protocol); ;
+            m_ActorServiceClient = new Thrift.ActorService.Client(protocol);
 
-            return m_ConnectionTask;       
+            m_ConnectedAction(m_Transport);
+
+            return new ConnectionResult(true, null);;       
            
                 
 
@@ -165,7 +187,7 @@ namespace XLN.Game.Common
 
         public override bool OnDestroy()
         {
-            m_ConnectionTask = null;
+            //m_ConnectionTask = null;
             m_HeartbeatTask = null;
             ClearConnection();
             return true;
@@ -382,7 +404,7 @@ namespace XLN.Game.Common
 
 
         private TTransport m_Transport;
-        private Task<ConnectionResult> m_ConnectionTask;
+        //private Task<ConnectionResult> m_ConnectionTask;
         private Task m_HeartbeatTask;
 
     }

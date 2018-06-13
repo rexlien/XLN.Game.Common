@@ -156,7 +156,7 @@ namespace Thrift.Transport
         public ConcurrentDictionary<uint, TaskCompletionSource<PendingBufferEntry>> PendingBuffers { get => m_PendingBuffers; set => m_PendingBuffers = value; }
 
         public override void Open()
-        {
+        {   /*
             if (IsOpen)
             {
                 throw new TTransportException(TTransportException.ExceptionType.AlreadyOpen, "Socket already connected");
@@ -202,6 +202,101 @@ namespace Thrift.Transport
 
                 // Make an asynchronous Connect request over the socket
                 socket.ConnectAsync(socketEventArg);
+            }
+            */
+            OpenAsyncTask().Wait();
+        }
+
+        public Task<bool> OpenAsyncTask()
+        {
+            
+            TaskCompletionSource<bool> retSource = new TaskCompletionSource<bool>();
+            if (IsOpen)
+            {
+                throw new TTransportException(TTransportException.ExceptionType.AlreadyOpen, "Socket already connected");
+            }
+
+            if (String.IsNullOrEmpty(host))
+            {
+                throw new TTransportException(TTransportException.ExceptionType.NotOpen, "Cannot open null host");
+            }
+
+            if (port <= 0)
+            {
+                throw new TTransportException(TTransportException.ExceptionType.NotOpen, "Cannot open without port");
+            }
+
+            if (socket == null)
+            {
+                InitSocket();
+            }
+
+            if (timeout == 0)     // no timeout -> infinite
+            {
+                timeout = 100000000;  // set a default timeout for WP.
+            }
+
+            {
+                // Create DnsEndPoint. The hostName and port are passed in to this method.
+                DnsEndPoint hostEntry = new DnsEndPoint(this.host, this.port);
+
+                // Create a SocketAsyncEventArgs object to be used in the connection request
+                SocketAsyncEventArgs socketEventArg = new SocketAsyncEventArgs();
+                socketEventArg.RemoteEndPoint = hostEntry;
+
+                socketEventArg.Completed += new EventHandler<SocketAsyncEventArgs>(delegate (object s, SocketAsyncEventArgs e)
+                {
+                    if (connectHandler != null)
+                    {
+                        connectHandler(this, e);
+                    }
+                    if (e.SocketError == SocketError.Success)
+                        retSource.SetResult(true);
+                    else
+                    {
+                        
+                        retSource.SetException(new TTransportException(e.SocketError.ToString()));
+                        //retSource.SetResult(false);
+                    }
+                });
+
+
+                // Make an asynchronous Connect request over the socket
+                if(!socket.ConnectAsync(socketEventArg))
+                {
+                    if (socketEventArg.SocketError == SocketError.Success)
+                        retSource.SetResult(true);
+                    else
+                    {
+                        
+                        retSource.SetException(new TTransportException(socketEventArg.SocketError.ToString()));
+                        //retSource.SetResult(false);
+                    }
+                }
+            }
+
+            return retSource.Task;
+        }
+
+        public async Task OpenAsync()
+        {
+            TaskCompletionSource<bool> retSource = new TaskCompletionSource<bool>();
+
+            Task<bool> openTask = OpenAsyncTask();
+            Task timeoutTask = Task.Delay(timeout);
+            Task complete = null;
+            try
+            {
+                complete = await Task.WhenAny(openTask, timeoutTask);
+                await complete;
+            }
+            catch(TTransportException ex)
+            {
+                throw ex;
+            }
+            if (complete == timeoutTask)
+            {
+                throw new TTransportException("Connection Timeout");
             }
         }
 

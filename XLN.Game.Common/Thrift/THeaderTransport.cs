@@ -124,6 +124,14 @@ namespace Thrift.Transport
             m_AsyncSocket.Open();
         }
 
+        public async Task<TTransport> OpenAsync()
+        {
+            CheckNotDisposed();
+            await m_AsyncSocket.OpenAsync();
+            return this;
+        }
+
+
         public override bool IsOpen
         {
             get
