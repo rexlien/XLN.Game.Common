@@ -6,6 +6,13 @@
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <OutputPath>..\..\Assets\XLN.Game.Common</OutputPath>
+    <CustomCommands>
+      <CustomCommands>
+        <Command>
+          <type>AfterBuild</type>
+        </Command>
+      </CustomCommands>
+    </CustomCommands>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>..\..\Assets\XLN.Game.Common</OutputPath>
@@ -39,8 +46,14 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Actor\" />
+    <Folder Include="Thrift\" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="BaseBehavior.cs.meta" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="websocketJS.jslib">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

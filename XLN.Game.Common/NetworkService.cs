@@ -73,7 +73,7 @@ namespace XLN.Game.Common
             //    return new ConnectionResult(false, new NetworkServieException("connection task not complete yet"));    
             //}
             //
-            TAsyncSocket socket = new TAsyncSocket(m_ServerConfig.IP, m_ServerConfig.Port);
+            TAsyncSystemSocket socket = new TAsyncSystemSocket(m_ServerConfig.IP, m_ServerConfig.Port);
             socket.Timeout = 10000;
             THeaderTransport transport = new THeaderTransport(socket);
             try

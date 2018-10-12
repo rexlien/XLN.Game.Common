@@ -28,8 +28,9 @@ using XLN.Game.Common;
 using System.Threading.Tasks;
 using System.Text;
 using Force.Crc32;
+using Thrift.Transport;
 
-namespace Thrift.Transport
+namespace XLN.Game.Common.Thrift
 {
     public class THeaderTransport : TTransport, IDisposable
     {
@@ -174,7 +175,7 @@ namespace Thrift.Transport
                 int got = readBuffer.Value.Read(buf, off, len);
                 if(got == 0)
                 {
-                    throw new TTransportException("un expected error");
+                    throw new TTransportException("unexpected error");
                 }
 
                 return got;
@@ -448,7 +449,7 @@ namespace Thrift.Transport
 
        public override void EndFlush(IAsyncResult asyncResult)
         {
-            TAsyncSocket.FlushAsyncResult result = (TAsyncSocket.FlushAsyncResult)asyncResult;
+            TAsyncSocket.SocketFlushAsyncResult result = (TAsyncSocket.SocketFlushAsyncResult)asyncResult;
             s_CurSequence.Value = result.SeqID;
             //LogService.Logger.Log(LogService.LogType.LT_DEBUG, "SeqID:" + result.SeqID + " added");
             m_AsyncSocket.PendingBuffers.TryAdd(result.SeqID, new TaskCompletionSource<TAsyncSocket.PendingBufferEntry>());
